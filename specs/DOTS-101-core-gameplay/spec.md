@@ -102,6 +102,7 @@ power-ups, levels, high scores.
 - Levels (from the ticket).
 - Saving high scores or any other persistence (from the ticket; see D-11).
 - Any server, API or database: the game runs entirely in the browser.
+- Shared editor and tooling settings (EditorConfig, Prettier, VS Code workspace files, README) → [ticket draft](tickets/1-editor-and-tooling-defaults.md)
 
 ## Technologies
 <!-- Must match front matter `technologies`; each must be in the company stack or covered by an accepted ADR. -->
