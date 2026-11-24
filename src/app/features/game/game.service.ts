@@ -2,6 +2,7 @@ import { Injectable, InjectionToken, computed, inject, signal } from '@angular/c
 import {
   BOARD_SIZE,
   Board,
+  MINIMUM_CHAIN_LENGTH,
   Position,
   RandomSource,
   applyGravity,
@@ -10,6 +11,7 @@ import {
   deal,
   hasValidMove,
   isAdjacent,
+  isCrossingLink,
   isSamePosition,
   refill,
 } from './board.model';
@@ -24,6 +26,9 @@ export const FALL_DURATION_MS = 200;
 
 /** How long the points just earned stay next to the score. */
 export const POINTS_EARNED_DURATION_MS = 1000;
+
+/** How long the dots of a too-short chain shake. */
+export const SHAKE_DURATION_MS = 300;
 
 export type FocusCursorDirection = 'up' | 'down' | 'left' | 'right';
 
@@ -45,6 +50,7 @@ export class GameService {
   readonly gameOver = signal(false);
   readonly focusCursor = signal<Position>({ row: 0, column: 0 });
   readonly dragging = signal(false);
+  readonly shakingDots = signal<readonly Position[]>([]);
 
   readonly chainColor = computed(() => {
     const startingDot = this.chain()[0];
@@ -53,9 +59,11 @@ export class GameService {
 
   private drag: Drag | null = null;
   private pointsEarnedTimer?: ReturnType<typeof setTimeout>;
+  private shakeTimer?: ReturnType<typeof setTimeout>;
 
   newGame(): void {
     clearTimeout(this.pointsEarnedTimer);
+    this.stopShake();
     this.board.set(deal(this.random));
     this.chain.set([]);
     this.score.set(0);
@@ -128,6 +136,7 @@ export class GameService {
     const chain = this.chain();
     const lastDot = chain.at(-1);
     if (!lastDot) {
+      this.stopShake();
       this.chain.set([position]);
       return;
     }
@@ -140,7 +149,12 @@ export class GameService {
 
     const alreadyInChain = chain.some((dot) => isSamePosition(dot, position));
     const color = this.board()[position.row][position.column]?.color;
-    if (!alreadyInChain && isAdjacent(position, lastDot) && color === this.chainColor()) {
+    if (
+      !alreadyInChain &&
+      isAdjacent(position, lastDot) &&
+      color === this.chainColor() &&
+      !isCrossingLink(chain, position)
+    ) {
       this.chain.set([...chain, position]);
     }
   }
@@ -148,7 +162,11 @@ export class GameService {
   private endChain(): void {
     const chain = this.chain();
     this.chain.set([]);
-    if (chain.length < 2) return;
+    if (chain.length < MINIMUM_CHAIN_LENGTH) {
+      // A 1-dot chain is how a player cancels a selection, so only longer too-short chains shake.
+      if (chain.length > 1) this.shake(chain);
+      return;
+    }
 
     const points = chainScore(chain.length);
     this.score.update((score) => score + points);
@@ -163,6 +181,17 @@ export class GameService {
         if (!hasValidMove(this.board())) this.gameOver.set(true);
       }, FALL_DURATION_MS);
     }, FALL_DURATION_MS);
+  }
+
+  private shake(dots: readonly Position[]): void {
+    clearTimeout(this.shakeTimer);
+    this.shakingDots.set(dots);
+    this.shakeTimer = setTimeout(() => this.shakingDots.set([]), SHAKE_DURATION_MS);
+  }
+
+  private stopShake(): void {
+    clearTimeout(this.shakeTimer);
+    this.shakingDots.set([]);
   }
 
   private showPointsEarned(points: number): void {

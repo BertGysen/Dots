@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  DOCUMENT,
   ElementRef,
   computed,
   inject,
@@ -13,6 +12,7 @@ import { FocusCursorDirection, GameService } from './game.service';
 
 const CELL_SIZE = 46;
 const BOARD_PADDING = 33;
+const DOT_RADIUS = 13;
 
 const ARROW_KEYS: Record<string, FocusCursorDirection> = {
   ArrowUp: 'up',
@@ -24,6 +24,7 @@ const ARROW_KEYS: Record<string, FocusCursorDirection> = {
 interface BoardCell extends Position {
   readonly dot: Dot;
   readonly inChain: boolean;
+  readonly shaking: boolean;
 }
 
 interface Point {
@@ -44,11 +45,11 @@ interface Point {
 })
 export class GameComponent {
   protected readonly game = inject(GameService);
-  private readonly document = inject(DOCUMENT);
   private readonly boardElement = viewChild.required<ElementRef<SVGSVGElement>>('board');
 
   protected readonly boardPixels = BOARD_PADDING * 2 + CELL_SIZE * (BOARD_SIZE - 1);
   protected readonly cellSize = CELL_SIZE;
+  protected readonly dotRadius = DOT_RADIUS;
 
   protected readonly keyboardFocus = signal(false);
   protected readonly pointer = signal<Point | null>(null);
@@ -56,12 +57,14 @@ export class GameComponent {
 
   protected readonly cells = computed<BoardCell[]>(() => {
     const chain = this.game.chain();
+    const shakingDots = this.game.shakingDots();
     const cells: BoardCell[] = [];
     this.game.board().forEach((dots, row) =>
       dots.forEach((dot, column) => {
         if (!dot) return;
         const inChain = chain.some((p) => p.row === row && p.column === column);
-        cells.push({ dot, row, column, inChain });
+        const shaking = shakingDots.some((p) => p.row === row && p.column === column);
+        cells.push({ dot, row, column, inChain, shaking });
       }),
     );
     return cells;
@@ -112,8 +115,9 @@ export class GameComponent {
 
   protected onPointerMove(event: PointerEvent): void {
     if (!this.game.dragging()) return;
-    this.pointer.set(this.toBoardPoint(event));
-    const position = this.dotUnderPointer(event);
+    const point = this.toBoardPoint(event);
+    this.pointer.set(point);
+    const position = point && this.dotCircleAt(point);
     if (position) this.game.enterDot(position);
   }
 
@@ -145,13 +149,16 @@ export class GameComponent {
     }
   }
 
-  /** Touch pointers stay captured by the pressed dot, so the dot under the finger is looked up by position. */
-  private dotUnderPointer(event: PointerEvent): Position | null {
-    const dot = this.document
-      .elementFromPoint(event.clientX, event.clientY)
-      ?.closest<SVGGElement>('[data-testid="dot"]');
-    if (!dot || !this.boardElement().nativeElement.contains(dot)) return null;
-    return { row: Number(dot.dataset['row']), column: Number(dot.dataset['column']) };
+  /**
+   * During a drag only the dot circle counts, not the whole cell, so a diagonal drag that cuts
+   * through the corners of neighboring cells does not pick up those dots.
+   */
+  private dotCircleAt(point: Point): Position | null {
+    const column = Math.round((point.x - BOARD_PADDING) / CELL_SIZE);
+    const row = Math.round((point.y - BOARD_PADDING) / CELL_SIZE);
+    if (row < 0 || row >= BOARD_SIZE || column < 0 || column >= BOARD_SIZE) return null;
+    const distance = Math.hypot(point.x - this.x(column), point.y - this.y(row));
+    return distance <= DOT_RADIUS ? { row, column } : null;
   }
 
   private toBoardPoint(event: PointerEvent): Point | null {
