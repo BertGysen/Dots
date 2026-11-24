@@ -597,6 +597,21 @@ describe('GameComponent', () => {
     expect(game.chain()).toEqual([]);
   });
 
+  it('AC_13_an_arrow_key_during_the_animation_does_not_show_the_focus_cursor', () => {
+    useBoard(MOCK_BOARD);
+    refillWithBlue();
+    click(3, 1);
+    click(3, 2);
+    click(3, 2);
+
+    key('ArrowDown');
+    expect(focusCursor()).toBeNull();
+
+    finishAnimation();
+    key('ArrowDown');
+    expect(focusCursor()).toBe('1,0');
+  });
+
   it('AC_18_focus_cursor_starts_top_left_and_shows_only_while_the_board_has_keyboard_focus', () => {
     expect(focusCursor()).toBeNull();
     expect(board().getAttribute('tabindex')).toBe('0');
