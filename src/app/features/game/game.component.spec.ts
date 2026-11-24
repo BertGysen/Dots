@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BOARD_SIZE, Board, PALETTE } from './board.model';
+import { BOARD_SIZE, Board, COLOR_PALETTE } from './board.model';
 import { GameComponent } from './game.component';
 import { FALL_DURATION_MS, GameService, RANDOM_SOURCE } from './game.service';
 
@@ -26,7 +26,7 @@ const ONE_PAIR_BOARD = Array.from({ length: BOARD_SIZE }, (_, row) =>
 let nextId = 1000;
 function toBoard(indexes: number[][]): Board {
   return indexes.map((cells) =>
-    cells.map((index) => ({ id: nextId++, color: PALETTE[index], dropRows: 0 })),
+    cells.map((index) => ({ id: nextId++, color: COLOR_PALETTE[index], dropRows: 0 })),
   );
 }
 
@@ -128,7 +128,7 @@ describe('GameComponent', () => {
         {
           provide: RANDOM_SOURCE,
           useValue: () =>
-            pickedColors.length ? (pickedColors.shift()! + 0.5) / PALETTE.length : Math.random(),
+            pickedColors.length ? (pickedColors.shift()! + 0.5) / COLOR_PALETTE.length : Math.random(),
         },
       ],
     });
@@ -146,9 +146,9 @@ describe('GameComponent', () => {
     const dots = (fixture.nativeElement as HTMLElement).querySelectorAll('[data-testid="dot"]');
 
     expect(dots.length).toBe(49);
-    dots.forEach((dot) => expect(PALETTE).toContain(dot.getAttribute('data-color')));
+    dots.forEach((dot) => expect(COLOR_PALETTE).toContain(dot.getAttribute('data-color')));
     expect(text('score')).toBe('0');
-    expect(PALETTE).toEqual(['#0072B2', '#E69F00', '#009E73', '#CC79A7', '#F0E442']);
+    expect(COLOR_PALETTE).toEqual(['#0072B2', '#E69F00', '#009E73', '#CC79A7', '#F0E442']);
   });
 
   it('AC_2_new_game_board_has_a_valid_move', () => {
@@ -301,8 +301,8 @@ describe('GameComponent', () => {
 
     const dots = (fixture.nativeElement as HTMLElement).querySelectorAll('[data-testid="dot"]');
     expect(dots.length).toBe(49);
-    expect(PALETTE).toContain(dotAt(0, 2).getAttribute('data-color'));
-    expect(PALETTE).toContain(dotAt(1, 2).getAttribute('data-color'));
+    expect(COLOR_PALETTE).toContain(dotAt(0, 2).getAttribute('data-color'));
+    expect(COLOR_PALETTE).toContain(dotAt(1, 2).getAttribute('data-color'));
     expect(game.board()[0][2]!.dropRows).toBe(2);
   });
 
@@ -329,7 +329,7 @@ describe('GameComponent', () => {
 
   it('AC_14_chain_dots_are_highlighted_and_joined_by_a_line_in_the_chain_color', () => {
     useBoard(MOCK_BOARD);
-    const blue = PALETTE[B];
+    const blue = COLOR_PALETTE[B];
     click(3, 1);
 
     expect(dotAt(3, 1).querySelector('.ring')?.getAttribute('stroke')).toBe(blue);
@@ -557,7 +557,7 @@ describe('GameComponent', () => {
     expect(line?.getAttribute('y1')).toBe('171');
     expect(line?.getAttribute('x2')).toBe('156');
     expect(line?.getAttribute('y2')).toBe('132');
-    expect(line?.getAttribute('stroke')).toBe(PALETTE[B]);
+    expect(line?.getAttribute('stroke')).toBe(COLOR_PALETTE[B]);
 
     releasePointer();
     expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="drag-line"]')).toBeNull();

@@ -1,9 +1,9 @@
 export const BOARD_SIZE = 7;
 
 /** Okabe-Ito colors as fixed in the mock: blue, orange, green, pink, yellow. */
-export const PALETTE = ['#0072B2', '#E69F00', '#009E73', '#CC79A7', '#F0E442'] as const;
+export const COLOR_PALETTE = ['#0072B2', '#E69F00', '#009E73', '#CC79A7', '#F0E442'] as const;
 
-export type DotColor = (typeof PALETTE)[number];
+export type DotColor = (typeof COLOR_PALETTE)[number];
 
 export interface Dot {
   readonly id: number;
@@ -26,7 +26,7 @@ export type RandomSource = () => number;
 let nextDotId = 1;
 
 export function createDot(random: RandomSource, dropRows = 0): Dot {
-  const color = PALETTE[Math.floor(random() * PALETTE.length)];
+  const color = COLOR_PALETTE[Math.floor(random() * COLOR_PALETTE.length)];
   return { id: nextDotId++, color, dropRows };
 }
 

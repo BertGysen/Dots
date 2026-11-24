@@ -1,7 +1,7 @@
 import {
   BOARD_SIZE,
   Board,
-  PALETTE,
+  COLOR_PALETTE,
   applyGravity,
   chainScore,
   clear,
@@ -14,7 +14,7 @@ import {
 /** A random source that picks the given palette indexes in order, then `fallback`. */
 function pickColors(indexes: number[], fallback = 0): () => number {
   const queue = [...indexes];
-  return () => ((queue.length ? queue.shift()! : fallback) + 0.5) / PALETTE.length;
+  return () => ((queue.length ? queue.shift()! : fallback) + 0.5) / COLOR_PALETTE.length;
 }
 
 /** Palette index per cell such that no two adjacent cells share a color. */
@@ -31,7 +31,7 @@ function boardFromIndexes(indexes: number[]): Board {
   return Array.from({ length: BOARD_SIZE }, (_, row) =>
     Array.from({ length: BOARD_SIZE }, (_, column) => ({
       id: id++,
-      color: PALETTE[indexes[row * BOARD_SIZE + column]],
+      color: COLOR_PALETTE[indexes[row * BOARD_SIZE + column]],
       dropRows: 0,
     })),
   );
@@ -44,9 +44,9 @@ describe('board model', () => {
     expect(board.length).toBe(7);
     for (const dots of board) {
       expect(dots.length).toBe(7);
-      for (const dot of dots) expect(PALETTE).toContain(dot!.color);
+      for (const dot of dots) expect(COLOR_PALETTE).toContain(dot!.color);
     }
-    expect(new Set(PALETTE).size).toBe(5);
+    expect(new Set(COLOR_PALETTE).size).toBe(5);
   });
 
   it('AC_2_deal_without_valid_move_is_re_dealt', () => {
@@ -54,7 +54,7 @@ describe('board model', () => {
 
     const board = deal(random);
 
-    expect(board.flat().every((dot) => dot!.color === PALETTE[0])).toBe(true);
+    expect(board.flat().every((dot) => dot!.color === COLOR_PALETTE[0])).toBe(true);
     expect(hasValidMove(board)).toBe(true);
   });
 
@@ -120,8 +120,8 @@ describe('board model', () => {
     const full = refill(fallen, Math.random);
 
     expect(full.flat().every((dot) => dot !== null)).toBe(true);
-    expect(PALETTE).toContain(full[0][5]!.color);
-    expect(PALETTE).toContain(full[1][5]!.color);
+    expect(COLOR_PALETTE).toContain(full[0][5]!.color);
+    expect(COLOR_PALETTE).toContain(full[1][5]!.color);
     expect(full[0][5]!.dropRows).toBe(2);
     expect(full[1][5]!.dropRows).toBe(2);
     expect(full[2][5]).toBe(fallen[2][5]);
