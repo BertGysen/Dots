@@ -1,0 +1,103 @@
+<div class="game">
+  <header class="hud">
+    <span class="title">Dots</span>
+    <span class="score">
+      Score <b data-testid="score">{{ game.score() }}</b>
+      @if (game.pointsEarned(); as points) {
+        <span class="points-earned" data-testid="points-earned">+{{ points }}</span>
+      }
+    </span>
+  </header>
+
+  <div class="board-wrap">
+    <svg
+      #board
+      class="board"
+      data-testid="board"
+      tabindex="0"
+      role="application"
+      aria-label="Dots board"
+      aria-describedby="board-hint"
+      [class.game-over]="game.gameOver()"
+      [attr.viewBox]="'0 0 ' + boardPixels + ' ' + boardPixels"
+      (pointerdown)="onBoardPointerDown()"
+      (focus)="onBoardFocus()"
+      (blur)="onBoardBlur()"
+      (keydown)="onBoardKeydown($event)"
+    >
+      <rect class="background" x="0" y="0" [attr.width]="boardPixels" [attr.height]="boardPixels" rx="16" />
+
+      @if (game.chain().length > 1) {
+        <polyline
+          class="chain-line"
+          data-testid="chain-line"
+          [attr.points]="chainLine()"
+          [attr.stroke]="game.chainColor()"
+        />
+      }
+
+      @if (dragLine(); as line) {
+        <line
+          class="drag-line"
+          data-testid="drag-line"
+          [attr.x1]="line.x1"
+          [attr.y1]="line.y1"
+          [attr.x2]="line.x2"
+          [attr.y2]="line.y2"
+          [attr.stroke]="game.chainColor()"
+        />
+      }
+
+      @for (empty of emptyCells(); track empty.row * 100 + empty.column) {
+        <circle class="empty" [attr.cx]="x(empty.column)" [attr.cy]="y(empty.row)" r="13" />
+      }
+
+      @for (cell of cells(); track cell.dot.id) {
+        <g
+          class="dot"
+          data-testid="dot"
+          [attr.data-row]="cell.row"
+          [attr.data-column]="cell.column"
+          [attr.data-color]="cell.dot.color"
+          [class.in-chain]="cell.inChain"
+          [style.transform]="'translate(' + x(cell.column) + 'px, ' + y(cell.row) + 'px)'"
+          (pointerdown)="onDotPointerDown($event, { row: cell.row, column: cell.column })"
+        >
+          <g class="drop" [style.--drop]="-cell.dot.dropRows * cellSize + 'px'">
+            @if (cell.inChain) {
+              <circle class="ring" r="22" [attr.stroke]="cell.dot.color" />
+            }
+            <circle class="fill" [attr.r]="cell.inChain ? 17 : 13" [attr.fill]="cell.dot.color" />
+          </g>
+        </g>
+      }
+
+      @if (keyboardFocus() && !game.gameOver()) {
+        <rect
+          class="focus-cursor"
+          data-testid="focus-cursor"
+          [attr.data-row]="game.focusCursor().row"
+          [attr.data-column]="game.focusCursor().column"
+          [attr.x]="x(game.focusCursor().column) - 21"
+          [attr.y]="y(game.focusCursor().row) - 21"
+          width="42"
+          height="42"
+          rx="10"
+        />
+      }
+    </svg>
+
+    @if (game.gameOver()) {
+      <div class="game-over-panel" data-testid="game-over" role="dialog" aria-label="Game over">
+        <p class="game-over-title">Game over</p>
+        <p>Final score</p>
+        <p class="final-score" data-testid="final-score">{{ game.score() }}</p>
+        <button type="button" data-testid="play-again" (click)="game.newGame()">Play again</button>
+      </div>
+    }
+  </div>
+
+  <p id="board-hint" class="hint" data-testid="hint" [class.visible]="keyboardFocus()">
+    Arrow keys move · Enter / Space select
+  </p>
+</div>
