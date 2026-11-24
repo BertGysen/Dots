@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BOARD_SIZE, Board, COLOR_PALETTE } from './board.model';
+import { BOARD_SIZE, Board, COLOR_PALETTE, hasValidMove } from './board.model';
 import { GameComponent } from './game.component';
-import { FALL_DURATION_MS, GameService, RANDOM_SOURCE } from './game.service';
+import { FALL_DURATION_MS, GameService, RANDOM_SOURCE, SHAKE_DURATION_MS } from './game.service';
 
 const [B, O, G, P, Y] = [0, 1, 2, 3, 4];
 
@@ -16,12 +16,18 @@ const MOCK_BOARD = [
   [Y, O, Y, G, P, O, G],
 ];
 
-/** No two adjacent cells share a color, except the pair at row 6, columns 0 and 1. */
-const ONE_PAIR_BOARD = Array.from({ length: BOARD_SIZE }, (_, row) =>
+/**
+ * No two adjacent cells (8 directions) share a color, except the 3 pink dots at row 6, columns 0–2:
+ * the board's only valid move. After clearing them, refilling the top row with
+ * ONLY_PAIRS_REFILL leaves a pair but no valid move; STILL_A_MOVE_REFILL leaves a group of 4.
+ */
+const ONE_MOVE_BOARD = Array.from({ length: BOARD_SIZE }, (_, row) =>
   Array.from({ length: BOARD_SIZE }, (_, column) =>
-    row === 6 && column === 1 ? 1 : (row + 2 * column) % 5,
+    row === 6 && column <= 2 ? P : (row + 2 * column) % 5,
   ),
 );
+const ONLY_PAIRS_REFILL = [O, P, O];
+const STILL_A_MOVE_REFILL = [O, O, O];
 
 let nextId = 1000;
 function toBoard(indexes: number[][]): Board {
@@ -62,14 +68,15 @@ describe('GameComponent', () => {
     pointer('pointerdown', dotAt(row, column), pointerType);
   }
 
-  /** jsdom has no layout, so the dot under the pointer is stubbed. */
-  function moveOver(target: Element | null, pointerType = 'mouse'): void {
-    document.elementFromPoint = () => target;
-    pointer('pointermove', document, pointerType);
+  /** jsdom has no layout, so the board is stubbed to fill 342×342 px at the page's top-left. */
+  function moveToPoint(x: number, y: number, pointerType = 'mouse'): void {
+    board().getBoundingClientRect = () => ({ left: 0, top: 0, width: 342, height: 342 }) as DOMRect;
+    document.dispatchEvent(new PointerEvent('pointermove', { clientX: x, clientY: y, pointerType }));
+    render();
   }
 
   function moveTo(row: number, column: number, pointerType = 'mouse'): void {
-    moveOver(dotAt(row, column).querySelector('.fill'), pointerType);
+    moveToPoint(33 + column * 46, 33 + row * 46, pointerType);
   }
 
   function releasePointer(pointerType = 'mouse'): void {
@@ -139,7 +146,6 @@ describe('GameComponent', () => {
 
   afterEach(() => {
     vi.useRealTimers();
-    delete (document as { elementFromPoint?: unknown }).elementFromPoint;
   });
 
   it('AC_1_new_game_shows_7x7_board_of_palette_colors_and_score_0', () => {
@@ -152,14 +158,7 @@ describe('GameComponent', () => {
   });
 
   it('AC_2_new_game_board_has_a_valid_move', () => {
-    const board = game.board();
-    const hasPair = board.some((dots, row) =>
-      dots.some(
-        (dot, column) =>
-          board[row + 1]?.[column]?.color === dot!.color || dots[column + 1]?.color === dot!.color,
-      ),
-    );
-    expect(hasPair).toBe(true);
+    expect(hasValidMove(game.board())).toBe(true);
   });
 
   it('AC_3_clicking_a_dot_with_no_chain_starts_a_chain', () => {
@@ -192,7 +191,6 @@ describe('GameComponent', () => {
     const before = game.chain();
 
     click(2, 4); // adjacent but yellow
-    click(1, 4); // blue but diagonal
     click(0, 6); // blue but far away
     click(3, 1); // already in the chain, not last or previous
 
@@ -217,19 +215,19 @@ describe('GameComponent', () => {
     expect(chainDots()).not.toContain('2,3');
   });
 
-  it('AC_7_clicking_the_last_dot_of_a_2_plus_chain_clears_it', () => {
+  it('AC_7_clicking_the_last_dot_of_a_3_plus_chain_clears_it', () => {
     useBoard(MOCK_BOARD);
-    const chainIds = [game.board()[3][1]!.id, game.board()[3][2]!.id];
+    const chainIds = [game.board()[3][1]!.id, game.board()[3][2]!.id, game.board()[2][2]!.id];
     click(3, 1);
     click(3, 2);
+    click(2, 2);
 
-    click(3, 2);
+    click(2, 2);
 
     expect(game.chain()).toEqual([]);
-    expect(text('score')).toBe('20');
+    expect(text('score')).toBe('30');
     const idsOnBoard = game.board().flat().map((dot) => dot?.id);
-    expect(idsOnBoard).not.toContain(chainIds[0]);
-    expect(idsOnBoard).not.toContain(chainIds[1]);
+    for (const id of chainIds) expect(idsOnBoard).not.toContain(id);
   });
 
   it('AC_8_clicking_the_only_dot_of_a_1_dot_chain_ends_it_without_removing', () => {
@@ -269,15 +267,17 @@ describe('GameComponent', () => {
     refillWithBlue();
     click(3, 1);
     click(3, 2);
-    click(3, 2);
+    click(2, 2);
+    click(2, 2);
     finishAnimation();
     useBoard(MOCK_BOARD);
     click(3, 1);
     click(3, 2);
     click(2, 2);
-    click(2, 2);
+    click(2, 3);
+    click(2, 3);
 
-    expect(text('score')).toBe('50');
+    expect(text('score')).toBe('80');
   });
 
   it('AC_11_after_a_clear_dots_above_fall_down_keeping_their_order', () => {
@@ -285,7 +285,8 @@ describe('GameComponent', () => {
     const column2Ids = game.board().map((dots) => dots[2]!.id);
     click(3, 2);
     click(2, 2);
-    click(2, 2);
+    click(2, 3);
+    click(2, 3);
 
     const remainingIds = column2Ids.filter((_, row) => row !== 2 && row !== 3);
     expect(game.board().map((dots) => dots[2]?.id ?? null)).toEqual([null, null, ...remainingIds]);
@@ -295,7 +296,8 @@ describe('GameComponent', () => {
     useBoard(MOCK_BOARD);
     click(3, 2);
     click(2, 2);
-    click(2, 2);
+    click(2, 3);
+    click(2, 3);
 
     finishAnimation();
 
@@ -311,7 +313,8 @@ describe('GameComponent', () => {
     refillWithBlue();
     click(3, 1);
     click(3, 2);
-    click(3, 2);
+    click(2, 2);
+    click(2, 2);
 
     click(0, 0);
     expect(game.chain()).toEqual([]);
@@ -348,17 +351,18 @@ describe('GameComponent', () => {
   });
 
   it('AC_15_no_valid_move_after_refill_ends_the_game_with_final_score_and_play_again', () => {
-    useBoard(ONE_PAIR_BOARD);
-    pickedColors = [3, 1];
+    useBoard(ONE_MOVE_BOARD);
+    pickedColors = [...ONLY_PAIRS_REFILL];
     click(6, 0);
     click(6, 1);
-    click(6, 1);
+    click(6, 2);
+    click(6, 2);
     expect(text('game-over')).toBeUndefined();
 
     finishAnimation();
 
     expect(game.gameOver()).toBe(true);
-    expect(text('final-score')).toBe('20');
+    expect(text('final-score')).toBe('30');
     expect(text('play-again')).toBe('Play again');
     const before = game.board();
     click(5, 0);
@@ -367,11 +371,12 @@ describe('GameComponent', () => {
   });
 
   it('AC_15_game_continues_when_the_refill_leaves_a_valid_move', () => {
-    useBoard(ONE_PAIR_BOARD);
-    pickedColors = [0, 0];
+    useBoard(ONE_MOVE_BOARD);
+    pickedColors = [...STILL_A_MOVE_REFILL];
     click(6, 0);
     click(6, 1);
-    click(6, 1);
+    click(6, 2);
+    click(6, 2);
 
     finishAnimation();
 
@@ -380,11 +385,12 @@ describe('GameComponent', () => {
   });
 
   it('AC_16_play_again_resets_score_and_deals_a_new_board', () => {
-    useBoard(ONE_PAIR_BOARD);
-    pickedColors = [3, 1];
+    useBoard(ONE_MOVE_BOARD);
+    pickedColors = [...ONLY_PAIRS_REFILL];
     click(6, 0);
     click(6, 1);
-    click(6, 1);
+    click(6, 2);
+    click(6, 2);
     finishAnimation();
     const oldIds = new Set(game.board().flat().map((dot) => dot!.id));
 
@@ -439,7 +445,7 @@ describe('GameComponent', () => {
     moveTo(3, 3); // adjacent but orange
     moveTo(2, 1); // orange, diagonal to (3,2)
     moveTo(5, 0); // blue but far away
-    moveOver(null); // between dots
+    moveToPoint(102, 148); // between dots
 
     expect(game.chain()).toEqual([
       { row: 3, column: 1 },
@@ -488,12 +494,13 @@ describe('GameComponent', () => {
     expect(game.chain()).toEqual([{ row: 3, column: 1 }]);
 
     click(3, 2);
-    expect(game.chain().length).toBe(2);
+    click(2, 2);
+    expect(game.chain().length).toBe(3);
 
-    press(3, 2);
+    press(2, 2);
     releasePointer();
     expect(game.chain()).toEqual([]);
-    expect(text('score')).toBe('20');
+    expect(text('score')).toBe('30');
   });
 
   it('AC_9_press_on_the_last_dot_continues_the_chain', () => {
@@ -519,8 +526,9 @@ describe('GameComponent', () => {
     press(0, 0); // orange, not adjacent: ignored
     expect(game.chain()).toEqual([{ row: 3, column: 1 }]);
     moveTo(3, 2);
+    moveTo(2, 2);
     releasePointer();
-    expect(text('score')).toBe('20');
+    expect(text('score')).toBe('30');
     finishAnimation();
 
     useBoard(MOCK_BOARD);
@@ -529,7 +537,7 @@ describe('GameComponent', () => {
     expect(game.chain().length).toBe(2);
     moveTo(2, 2);
     releasePointer();
-    expect(text('score')).toBe('50');
+    expect(text('score')).toBe('60');
   });
 
   it('AC_9_release_outside_the_board_ends_the_chain', () => {
@@ -537,20 +545,18 @@ describe('GameComponent', () => {
     refillWithBlue();
     press(3, 1);
     moveTo(3, 2);
-    moveOver(document.body);
+    moveTo(2, 2);
+    moveToPoint(500, 500); // outside the board
 
     releasePointer();
 
-    expect(text('score')).toBe('20');
+    expect(text('score')).toBe('30');
   });
 
   it('AC_9_a_faint_line_runs_from_the_last_dot_to_the_pointer_while_dragging', () => {
     useBoard(MOCK_BOARD);
-    board().getBoundingClientRect = () => ({ left: 0, top: 0, width: 342, height: 342 }) as DOMRect;
     press(3, 1);
-    document.elementFromPoint = () => null;
-    document.dispatchEvent(new PointerEvent('pointermove', { clientX: 156, clientY: 132 }));
-    render();
+    moveToPoint(156, 132);
 
     const line = (fixture.nativeElement as HTMLElement).querySelector('[data-testid="drag-line"]');
     expect(line?.getAttribute('x1')).toBe('79');
@@ -588,7 +594,8 @@ describe('GameComponent', () => {
     board().dispatchEvent(new FocusEvent('focus'));
     click(3, 1);
     click(3, 2);
-    click(3, 2);
+    click(2, 2);
+    click(2, 2);
 
     key('ArrowRight');
     key('Enter');
@@ -602,7 +609,8 @@ describe('GameComponent', () => {
     refillWithBlue();
     click(3, 1);
     click(3, 2);
-    click(3, 2);
+    click(2, 2);
+    click(2, 2);
 
     key('ArrowDown');
     expect(focusCursor()).toBeNull();
@@ -683,8 +691,10 @@ describe('GameComponent', () => {
     key('Enter');
     key('ArrowRight');
     key('Enter');
-    key('Enter'); // last dot of a 2-dot chain: cleared
-    expect(text('score')).toBe('20');
+    key('ArrowUp');
+    key('Enter');
+    key('Enter'); // last dot of a 3-dot chain: cleared
+    expect(text('score')).toBe('30');
   });
 
   it('AC_18_other_keys_do_nothing', () => {
@@ -706,18 +716,22 @@ describe('GameComponent', () => {
     key('Enter');
     key('ArrowRight');
     key('Enter');
+    key('ArrowUp');
+    key('Enter');
     key('Enter');
 
     finishAnimation();
 
-    expect(focusCursor()).toBe('3,2');
+    expect(focusCursor()).toBe('2,2');
   });
 
   it('AC_18_focus_cursor_starts_top_left_again_after_play_again', () => {
-    useBoard(ONE_PAIR_BOARD);
-    pickedColors = [3, 1];
+    useBoard(ONE_MOVE_BOARD);
+    pickedColors = [...ONLY_PAIRS_REFILL];
     board().dispatchEvent(new FocusEvent('focus'));
     for (let i = 0; i < 6; i++) key('ArrowDown');
+    key('Enter');
+    key('ArrowRight');
     key('Enter');
     key('ArrowRight');
     key('Enter');
@@ -732,5 +746,425 @@ describe('GameComponent', () => {
     render();
 
     expect(focusCursor()).toBe('0,0');
+  });
+
+  describe('DOTS-102', () => {
+    /** MOCK_BOARD with some cells recolored. */
+    function useMockBoardWith(changes: [number, number, number][]): void {
+      const indexes = MOCK_BOARD.map((cells) => [...cells]);
+      for (const [row, column, color] of changes) indexes[row][column] = color;
+      useBoard(indexes);
+    }
+
+    function shakingDots(): string[] {
+      return Array.from(
+        (fixture.nativeElement as HTMLElement).querySelectorAll('[data-testid="dot"].shaking'),
+      ).map((dot) => `${dot.getAttribute('data-row')},${dot.getAttribute('data-column')}`);
+    }
+
+    function chainLine(): Element | null {
+      return (fixture.nativeElement as HTMLElement).querySelector('[data-testid="chain-line"]');
+    }
+
+    it('AC_1_clicking_a_diagonally_adjacent_dot_of_the_chain_color_adds_it', () => {
+      useBoard(MOCK_BOARD);
+
+      click(3, 1);
+      click(2, 2); // up-right
+      click(2, 3); // right
+      click(1, 4); // up-right
+
+      expect(game.chain()).toEqual([
+        { row: 3, column: 1 },
+        { row: 2, column: 2 },
+        { row: 2, column: 3 },
+        { row: 1, column: 4 },
+      ]);
+      expect(chainDots().sort()).toEqual(['1,4', '2,2', '2,3', '3,1']);
+    });
+
+    it('AC_1_all_four_diagonal_directions_add_a_dot', () => {
+      useMockBoardWith([[4, 1, B], [5, 2, B], [4, 3, B], [2, 1, B], [3, 0, B]]);
+
+      click(5, 0);
+      click(4, 1); // up-right
+      click(5, 2); // down-right
+      click(4, 3); // up-right
+      click(3, 2); // up-left
+      click(2, 1); // up-left
+      click(3, 0); // down-left
+
+      expect(game.chain().length).toBe(7);
+      expect(game.chain().at(-1)).toEqual({ row: 3, column: 0 });
+    });
+
+    it('AC_1_diagonal_dots_can_be_added_by_drag_and_by_keyboard', () => {
+      useBoard(MOCK_BOARD);
+      press(3, 1);
+      moveTo(2, 2);
+      expect(game.chain()).toEqual([
+        { row: 3, column: 1 },
+        { row: 2, column: 2 },
+      ]);
+      releasePointer();
+
+      board().dispatchEvent(new FocusEvent('focus'));
+      for (let i = 0; i < 3; i++) key('ArrowDown');
+      key('ArrowRight');
+      key('Enter');
+      key('ArrowUp'); // the cursor moves one row or column per press
+      key('ArrowRight');
+      key('Enter');
+      expect(game.chain()).toEqual([
+        { row: 3, column: 1 },
+        { row: 2, column: 2 },
+      ]);
+    });
+
+    it('AC_2_dots_that_are_not_adjacent_are_ignored', () => {
+      useMockBoardWith([[5, 4, B]]);
+      click(3, 1);
+      click(2, 2);
+      click(3, 2);
+      const before = game.chain();
+
+      click(5, 4); // blue, two cells diagonally away
+      click(3, 4); // two cells to the right
+      click(1, 2); // two rows up
+
+      expect(game.chain()).toEqual(before);
+    });
+
+    it('AC_2_no_wrap_around_across_the_board_edge', () => {
+      useMockBoardWith([[1, 0, B], [6, 6, B]]);
+      click(0, 6);
+
+      click(1, 0); // start of the next row: other edge of the board
+      click(6, 6); // bottom of the same column
+
+      expect(game.chain()).toEqual([{ row: 0, column: 6 }]);
+    });
+
+    it('AC_3_a_diagonal_dot_of_another_color_is_ignored', () => {
+      useBoard(MOCK_BOARD);
+      click(3, 1);
+      click(2, 2);
+      click(3, 2);
+      const before = game.chain();
+
+      click(2, 1); // orange, up-left
+      click(4, 3); // yellow, down-right
+      click(4, 1); // pink, down-left
+
+      expect(game.chain()).toEqual(before);
+    });
+
+    it('AC_4_a_dot_already_in_the_chain_is_not_added_again', () => {
+      useBoard(MOCK_BOARD);
+      click(3, 1);
+      click(2, 2);
+      click(3, 2);
+
+      click(3, 1); // starting dot, adjacent to the last dot
+
+      expect(game.chain()).toEqual([
+        { row: 3, column: 1 },
+        { row: 2, column: 2 },
+        { row: 3, column: 2 },
+      ]);
+
+      click(2, 2); // the previous dot still steps back
+      expect(game.chain().length).toBe(2);
+    });
+
+    it('AC_5_a_crossing_link_is_ignored', () => {
+      useMockBoardWith([[3, 3, B]]);
+      click(3, 2);
+      click(2, 3); // up-right
+      click(2, 2); // left
+
+      click(3, 3); // down-right would cross the first link
+
+      expect(game.chain()).toEqual([
+        { row: 3, column: 2 },
+        { row: 2, column: 3 },
+        { row: 2, column: 2 },
+      ]);
+      expect(chainLine()?.getAttribute('points')).toBe('125,171 171,125 125,125');
+    });
+
+    it('AC_5_a_crossing_link_entered_during_a_drag_is_ignored', () => {
+      useMockBoardWith([[3, 3, B]]);
+      press(3, 2);
+      moveTo(2, 3);
+      moveTo(2, 2);
+
+      moveTo(3, 3);
+
+      expect(game.chain().length).toBe(3);
+    });
+
+    it('AC_6_ending_a_chain_of_3_dots_clears_it_and_scores_30_then_refills', () => {
+      useBoard(MOCK_BOARD);
+      refillWithBlue();
+      const chainIds = [game.board()[3][1]!.id, game.board()[2][2]!.id, game.board()[2][3]!.id];
+      click(3, 1);
+      click(2, 2);
+      click(2, 3);
+
+      click(2, 3);
+
+      expect(text('score')).toBe('30');
+      expect(text('points-earned')).toBe('+30');
+      const idsOnBoard = game.board().flat().map((dot) => dot?.id);
+      for (const id of chainIds) expect(idsOnBoard).not.toContain(id);
+      expect(shakingDots()).toEqual([]);
+      finishAnimation();
+      expect(game.board().flat().every((dot) => dot !== null)).toBe(true);
+    });
+
+    it('AC_6_releasing_a_drag_or_enter_on_the_last_dot_of_a_3_plus_chain_clears_it', () => {
+      useBoard(MOCK_BOARD);
+      refillWithBlue();
+      press(3, 1);
+      moveTo(2, 2);
+      moveTo(2, 3);
+      moveTo(1, 4);
+      releasePointer();
+      expect(text('score')).toBe('50');
+      finishAnimation();
+
+      useBoard(MOCK_BOARD);
+      board().dispatchEvent(new FocusEvent('focus'));
+      for (let i = 0; i < 3; i++) key('ArrowDown');
+      key('ArrowRight');
+      key('Enter');
+      key('ArrowRight');
+      key('Enter');
+      key('ArrowUp');
+      key('Enter');
+      key('Enter');
+      expect(text('score')).toBe('80');
+    });
+
+    it('AC_7_ending_a_2_dot_chain_by_click_removes_nothing_and_shakes_its_dots', () => {
+      useBoard(MOCK_BOARD);
+      const before = game.board();
+      click(3, 1);
+      click(2, 2);
+
+      click(2, 2);
+
+      expect(game.chain()).toEqual([]);
+      expect(chainDots()).toEqual([]);
+      expect(chainLine()).toBeNull();
+      expect(game.board()).toBe(before);
+      expect(text('score')).toBe('0');
+      expect(text('points-earned')).toBeUndefined();
+      expect(game.animating()).toBe(false);
+      expect(shakingDots().sort()).toEqual(['2,2', '3,1']);
+      expect(dotAt(2, 2).querySelector('.fill')?.getAttribute('r')).toBe('13');
+
+      vi.advanceTimersByTime(SHAKE_DURATION_MS);
+      render();
+      expect(shakingDots()).toEqual([]);
+      expect(game.board()).toBe(before);
+    });
+
+    it('AC_7_the_shake_has_a_static_fallback_for_reduced_motion_and_no_text_hint', () => {
+      useBoard(MOCK_BOARD);
+      click(3, 1);
+      click(3, 2);
+      click(3, 2);
+
+      expect(dotAt(3, 1).querySelectorAll('.shake-ghost').length).toBe(2);
+      expect(dotAt(3, 2).querySelectorAll('.shake-ghost').length).toBe(2);
+      expect(dotAt(2, 2).querySelectorAll('.shake-ghost').length).toBe(0);
+      expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Need');
+    });
+
+    it('AC_7_enter_on_the_last_dot_of_a_2_dot_chain_shakes_without_removing', () => {
+      useBoard(MOCK_BOARD);
+      const before = game.board();
+      board().dispatchEvent(new FocusEvent('focus'));
+      for (let i = 0; i < 3; i++) key('ArrowDown');
+      key('ArrowRight');
+      key('Enter');
+      key('ArrowRight');
+      key('Enter');
+
+      key('Enter');
+
+      expect(game.chain()).toEqual([]);
+      expect(game.board()).toBe(before);
+      expect(text('score')).toBe('0');
+      expect(shakingDots().sort()).toEqual(['3,1', '3,2']);
+    });
+
+    it('AC_8_releasing_a_drag_with_2_dots_removes_nothing_and_shakes_its_dots', () => {
+      useBoard(MOCK_BOARD);
+      const before = game.board();
+      press(3, 1);
+      moveTo(2, 2);
+
+      releasePointer();
+
+      expect(game.chain()).toEqual([]);
+      expect(game.board()).toBe(before);
+      expect(text('score')).toBe('0');
+      expect(game.animating()).toBe(false);
+      expect(shakingDots().sort()).toEqual(['2,2', '3,1']);
+    });
+
+    it('AC_8_lifting_a_finger_after_a_2_dot_drag_shakes_its_dots', () => {
+      useBoard(MOCK_BOARD);
+      press(3, 1, 'touch');
+      moveTo(3, 2, 'touch');
+
+      releasePointer('touch');
+
+      expect(text('score')).toBe('0');
+      expect(shakingDots().sort()).toEqual(['3,1', '3,2']);
+    });
+
+    it('AC_9_ending_a_1_dot_chain_is_silent', () => {
+      useBoard(MOCK_BOARD);
+      const before = game.board();
+
+      click(3, 1);
+      click(3, 1);
+      expect(game.chain()).toEqual([]);
+      expect(shakingDots()).toEqual([]);
+
+      press(3, 1);
+      moveTo(3, 2);
+      moveTo(3, 1); // step back to 1 dot
+      releasePointer();
+      expect(shakingDots()).toEqual([]);
+      expect(game.board()).toBe(before);
+      expect(text('score')).toBe('0');
+    });
+
+    it('AC_10_a_new_chain_can_start_during_the_shake_and_stops_it', () => {
+      useBoard(MOCK_BOARD);
+      click(3, 1);
+      click(2, 2);
+      click(2, 2);
+      expect(shakingDots().length).toBe(2);
+
+      click(4, 0);
+
+      expect(game.chain()).toEqual([{ row: 4, column: 0 }]);
+      expect(shakingDots()).toEqual([]);
+    });
+
+    it('AC_10_keyboard_input_is_accepted_during_the_shake', () => {
+      useBoard(MOCK_BOARD);
+      click(3, 1);
+      click(2, 2);
+      click(2, 2);
+      board().dispatchEvent(new FocusEvent('focus'));
+
+      key('ArrowDown');
+      key('Enter');
+
+      expect(game.focusCursor()).toEqual({ row: 1, column: 0 });
+      expect(game.chain()).toEqual([{ row: 1, column: 0 }]);
+    });
+
+    it('AC_11_the_game_ends_when_only_pairs_are_left_after_a_refill', () => {
+      useBoard(ONE_MOVE_BOARD);
+      pickedColors = [...ONLY_PAIRS_REFILL];
+      click(6, 0);
+      click(6, 1);
+      click(6, 2);
+      click(6, 2);
+
+      finishAnimation();
+
+      const top = game.board()[0];
+      expect(top[2]!.color).toBe(top[3]!.color); // a pair is left
+      expect(game.gameOver()).toBe(true);
+      expect(text('final-score')).toBe('30');
+    });
+
+    it('AC_11_the_game_continues_when_three_dots_touch_only_diagonally', () => {
+      useBoard(ONE_MOVE_BOARD);
+      pickedColors = [Y, P, G]; // green at 0,2 joins the greens at 1,1 and 1,3 diagonally
+      click(6, 0);
+      click(6, 1);
+      click(6, 2);
+      click(6, 2);
+
+      finishAnimation();
+
+      const board = game.board();
+      expect([board[1][1], board[0][2], board[1][3]].map((dot) => dot!.color)).toEqual(
+        Array(3).fill(COLOR_PALETTE[G]),
+      );
+      expect(board[1][2]!.color).not.toBe(COLOR_PALETTE[G]);
+      expect(game.gameOver()).toBe(false);
+    });
+
+    it('AC_12_diagonal_links_are_drawn_center_to_center_like_straight_links', () => {
+      useBoard(MOCK_BOARD);
+      click(3, 1);
+      click(2, 2);
+      click(2, 3);
+      click(1, 4);
+
+      const line = chainLine();
+      expect(line?.getAttribute('points')).toBe('79,171 125,125 171,125 217,79');
+      expect(line?.getAttribute('stroke')).toBe(COLOR_PALETTE[B]);
+      expect(line?.classList).toContain('chain-line');
+      expect(line?.tagName).toBe('polyline');
+    });
+
+    it('AC_12_the_chain_line_is_drawn_under_the_dots_so_dots_stay_visible', () => {
+      useBoard(MOCK_BOARD);
+      click(3, 1);
+      click(2, 2);
+
+      const firstDot = (fixture.nativeElement as HTMLElement).querySelector('[data-testid="dot"]')!;
+      expect(chainLine()!.compareDocumentPosition(firstDot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('AC_13_a_diagonal_drag_through_a_cell_corner_does_not_add_that_dot', () => {
+      useBoard(MOCK_BOARD);
+      press(3, 1);
+
+      moveToPoint(102, 152); // corner of the blue dot's cell at 3,2, outside its dot circle
+      expect(game.chain()).toEqual([{ row: 3, column: 1 }]);
+
+      moveToPoint(125 + 9, 125 + 9); // inside the dot circle at 2,2
+      expect(game.chain()).toEqual([
+        { row: 3, column: 1 },
+        { row: 2, column: 2 },
+      ]);
+    });
+
+    it('AC_13_the_dot_circle_has_the_drawn_dot_radius', () => {
+      useBoard(MOCK_BOARD);
+      press(3, 1);
+
+      moveToPoint(125 + 14, 171); // 14 px from the center of 3,2: outside
+      expect(game.chain().length).toBe(1);
+      moveToPoint(125 + 13, 171); // on the edge of the dot circle
+      expect(game.chain().length).toBe(2);
+    });
+
+    it('AC_13_clicks_and_taps_still_target_the_whole_cell', () => {
+      useBoard(MOCK_BOARD);
+      click(3, 1);
+
+      pointer('pointerdown', dotAt(3, 2).querySelector('.cell')!);
+      pointer('pointerup', document);
+      pointer('pointerdown', dotAt(2, 2).querySelector('.cell')!, 'touch');
+      pointer('pointerup', document, 'touch');
+
+      expect(game.chain().length).toBe(3);
+      const cell = dotAt(3, 2).querySelector('.cell')!;
+      expect([cell.getAttribute('width'), cell.getAttribute('height')]).toEqual(['46', '46']);
+    });
   });
 });

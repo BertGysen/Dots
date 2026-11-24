@@ -60,14 +60,20 @@
           [attr.data-column]="cell.column"
           [attr.data-color]="cell.dot.color"
           [class.in-chain]="cell.inChain"
+          [class.shaking]="cell.shaking"
           [style.transform]="'translate(' + x(cell.column) + 'px, ' + y(cell.row) + 'px)'"
           (pointerdown)="onDotPointerDown($event, { row: cell.row, column: cell.column })"
         >
+          <rect class="cell" [attr.x]="-cellSize / 2" [attr.y]="-cellSize / 2" [attr.width]="cellSize" [attr.height]="cellSize" />
           <g class="drop" [style.--drop]="-cell.dot.dropRows * cellSize + 'px'">
             @if (cell.inChain) {
               <circle class="ring" r="22" [attr.stroke]="cell.dot.color" />
             }
-            <circle class="fill" [attr.r]="cell.inChain ? 17 : 13" [attr.fill]="cell.dot.color" />
+            @if (cell.shaking) {
+              <circle class="shake-ghost" cx="-5" [attr.r]="dotRadius" [attr.fill]="cell.dot.color" />
+              <circle class="shake-ghost" cx="5" [attr.r]="dotRadius" [attr.fill]="cell.dot.color" />
+            }
+            <circle class="fill" [attr.r]="cell.inChain ? 17 : dotRadius" [attr.fill]="cell.dot.color" />
           </g>
         </g>
       }
