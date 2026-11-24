@@ -1,0 +1,158 @@
+:host {
+  display: block;
+  max-width: 342px;
+  margin: 24px auto;
+  padding: 0 16px;
+  color: #22252b;
+  font: 15px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+.hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 0 2px 8px;
+}
+
+.title {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.score b {
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.points-earned {
+  color: #00875a;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+.board-wrap {
+  position: relative;
+}
+
+.board {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.board:focus {
+  outline: none;
+}
+
+.background {
+  fill: #262a35;
+}
+
+.empty {
+  fill: none;
+  stroke: #3a3f4d;
+  stroke-width: 2;
+  stroke-dasharray: 3 4;
+}
+
+.chain-line {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dot {
+  cursor: pointer;
+  transition: transform 200ms ease-in;
+}
+
+.drop {
+  animation: drop-in 200ms ease-in;
+}
+
+.drag-line {
+  stroke-width: 8;
+  stroke-linecap: round;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.focus-cursor {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 3;
+  pointer-events: none;
+}
+
+.hint {
+  margin: 6px 0 0;
+  color: #6b6f78;
+  font-size: 13px;
+  text-align: center;
+  visibility: hidden;
+}
+
+.hint.visible {
+  visibility: visible;
+}
+
+.ring {
+  fill: none;
+  stroke-width: 3;
+  opacity: 0.7;
+}
+
+.game-over .dot {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.game-over-panel {
+  position: absolute;
+  inset: 22% 14%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 12px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  text-align: center;
+}
+
+.game-over-panel p {
+  margin: 0;
+}
+
+.game-over-title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.final-score {
+  font-size: 32px;
+  font-weight: 800;
+  margin: 2px 0 10px !important;
+}
+
+.game-over-panel button {
+  align-self: center;
+  padding: 8px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: #22252b;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@keyframes drop-in {
+  from {
+    transform: translateY(var(--drop));
+  }
+}

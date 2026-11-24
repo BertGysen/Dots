@@ -1,0 +1,1172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DOTS-101 mock</title>
+<style>
+:root { --page:#f4f1ea; --ink:#22252b; --muted:#6b6f78; --card:#fff; --line:#e2ddd2;
+        --board:#262a35; --empty:#3a3f4d; --accent:#22252b; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--page); color:var(--ink);
+       font:15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width:1120px; margin:0 auto; padding:24px 16px 64px; }
+header.doc h1 { margin:0 0 4px; font-size:22px; }
+header.doc p { margin:0 0 24px; color:var(--muted); }
+section { background:var(--card); border:1px solid var(--line); border-radius:14px;
+          padding:20px; margin:0 0 20px; }
+h2 { margin:0 0 14px; font-size:17px; }
+.frames { display:flex; flex-wrap:wrap; gap:20px; }
+.frame { margin:0; width:min(100%, 342px); }
+figcaption { font-size:13px; color:var(--muted); margin-top:8px; }
+.hud { display:flex; justify-content:space-between; align-items:baseline; margin:0 2px 8px; }
+.title { font-weight:700; letter-spacing:.04em; }
+.score b { font-size:20px; font-variant-numeric:tabular-nums; }
+.delta { color:#00875a; font-weight:700; margin-left:4px; }
+svg.board { display:block; width:100%; height:auto; }
+.bg { fill:var(--board); }
+.empty { fill:none; stroke:var(--empty); stroke-width:2; stroke-dasharray:3 4; }
+.mark { fill:none; stroke:#ff5a5f; stroke-width:2.5; stroke-dasharray:5 4; }
+.marktext { fill:#fff; font-size:10px; text-anchor:middle; font-weight:600; }
+.focus { fill:none; stroke:#fff; stroke-width:3; }
+.pointer { fill:rgba(255,255,255,.35); stroke:#fff; stroke-width:2; }
+.arrow { stroke:#fff; stroke-width:2.5; opacity:.85; }
+.ahead { fill:#fff; }
+.notes { margin:14px 0 0; padding-left:20px; font-size:14px; }
+.sw { display:inline-block; width:12px; height:12px; border-radius:50%; margin:0 4px 0 8px;
+      vertical-align:-1px; }
+.hint { font-size:13px; color:var(--muted); text-align:center; margin:6px 0 0; }
+.overwrap { position:relative; }
+.overlay { position:absolute; inset:22% 14%; background:#fff; border-radius:14px; text-align:center;
+           display:flex; flex-direction:column; justify-content:center; padding:12px;
+           box-shadow:0 8px 30px rgba(0,0,0,.35); }
+.overlay p { margin:0; }
+.ovt { font-size:20px; font-weight:700; }
+.final { font-size:32px; font-weight:800; margin:2px 0 10px !important; }
+.overlay button { font:inherit; font-weight:600; border:0; border-radius:999px; padding:8px 18px;
+                  background:var(--accent); color:#fff; align-self:center; }
+</style>
+</head>
+<body>
+<main>
+<header class="doc"><h1>DOTS-101 — Core gameplay mock</h1>
+<p>Static mock: every situation is drawn below, one under the other. Dashed red rings mark where the player clicks and the white circle marks the pointer or finger; neither is part of the game.</p></header>
+<section data-ac="AC-1 AC-16">
+<h2>AC-1, AC-16 — New game</h2>
+<div class="frames"><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>0</b></span></div><svg class="board" viewBox="0 0 342 342" width="342" role="img" aria-label="new board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="33.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="33.0" r="13" fill="#CC79A7"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="125.0" cy="79.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#0072B2"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="125.0" r="13" fill="#0072B2"/>
+<circle cx="171.0" cy="125.0" r="13" fill="#0072B2"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="171.0" r="13" fill="#0072B2"/>
+<circle cx="125.0" cy="171.0" r="13" fill="#0072B2"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#CC79A7"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#009E73"/>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><figcaption>Start of a game, or right after <i>Play again</i>: full 7×7 board, score 0.</figcaption></figure></div>
+<ul class="notes"><li>5-color palette (colorblind-friendly set): <span class="sw" style="background:#0072B2"></span>blue, <span class="sw" style="background:#E69F00"></span>orange, <span class="sw" style="background:#009E73"></span>green, <span class="sw" style="background:#CC79A7"></span>pink, <span class="sw" style="background:#F0E442"></span>yellow</li><li>Header shows the game name “Dots” and the score display.</li></ul>
+</section>
+<section data-ac="AC-3 AC-14">
+<h2>AC-3, AC-14 — Chain started</h2>
+<div class="frames"><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>120</b></span></div><svg class="board" viewBox="0 0 342 342" width="342" role="img" aria-label="board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="33.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="33.0" r="13" fill="#CC79A7"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="125.0" cy="79.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#0072B2"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="125.0" r="13" fill="#0072B2"/>
+<circle cx="171.0" cy="125.0" r="13" fill="#0072B2"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="171.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="79.0" cy="171.0" r="17" fill="#0072B2"/>
+<circle cx="125.0" cy="171.0" r="13" fill="#0072B2"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#CC79A7"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#009E73"/>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><figcaption>Player clicked the blue dot (row 4, column 2): a 1-dot chain. It is enlarged with a ring.</figcaption></figure></div>
+<ul class="notes"><li>Highlight: chain dots are drawn larger with a ring in the chain’s color.</li></ul>
+</section>
+<section data-ac="AC-4 AC-14">
+<h2>AC-4, AC-14 — Chain growing</h2>
+<div class="frames"><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>120</b></span></div><svg class="board" viewBox="0 0 342 342" width="342" role="img" aria-label="board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<polyline points="79.0,171.0 125.0,171.0 125.0,125.0 171.0,125.0" fill="none" stroke="#0072B2" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="33.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="33.0" r="13" fill="#CC79A7"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="125.0" cy="79.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#0072B2"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="125.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="125.0" cy="125.0" r="17" fill="#0072B2"/>
+<circle cx="171.0" cy="125.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="171.0" cy="125.0" r="17" fill="#0072B2"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="171.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="79.0" cy="171.0" r="17" fill="#0072B2"/>
+<circle cx="125.0" cy="171.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="125.0" cy="171.0" r="17" fill="#0072B2"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#CC79A7"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#009E73"/>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><figcaption>Three more adjacent blue dots clicked: a 4-dot chain, joined by a line in the chain’s color.</figcaption></figure></div>
+<ul class="notes"><li>Each added dot is adjacent (no diagonals) to the last dot and has the chain’s color.</li></ul>
+</section>
+<section data-ac="AC-5">
+<h2>AC-5 — Invalid clicks are ignored</h2>
+<div class="frames"><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>120</b></span></div><svg class="board" viewBox="0 0 342 342" width="342" role="img" aria-label="board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<polyline points="79.0,171.0 125.0,171.0 125.0,125.0 171.0,125.0" fill="none" stroke="#0072B2" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="33.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="33.0" r="13" fill="#CC79A7"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="125.0" cy="79.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#0072B2"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="125.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="125.0" cy="125.0" r="17" fill="#0072B2"/>
+<circle cx="171.0" cy="125.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="171.0" cy="125.0" r="17" fill="#0072B2"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="171.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="79.0" cy="171.0" r="17" fill="#0072B2"/>
+<circle cx="125.0" cy="171.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="125.0" cy="171.0" r="17" fill="#0072B2"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#CC79A7"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="125.0" r="21" class="mark"/>
+<text x="217.0" y="100.0" class="marktext">color</text>
+<circle cx="217.0" cy="79.0" r="21" class="mark"/>
+<text x="217.0" y="54.0" class="marktext">diagonal</text>
+<circle cx="79.0" cy="171.0" r="21" class="mark"/>
+<text x="79.0" y="146.0" class="marktext">in chain</text>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><figcaption>Chain of 4 (blue). The marked clicks do nothing; the chain stays as it is.</figcaption></figure></div>
+<ul class="notes"><li><b>color</b>: adjacent to the last dot but yellow, not blue.</li><li><b>diagonal</b>: blue, but only diagonally next to the last dot.</li><li><b>in chain</b>: already in the chain (not the last or previous dot).</li><li>No visual or sound feedback on an ignored click.</li></ul>
+</section>
+<section data-ac="AC-6 AC-14">
+<h2>AC-6, AC-14 — Step back</h2>
+<div class="frames"><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>120</b></span></div><svg class="board" viewBox="0 0 342 342" width="342" role="img" aria-label="board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<polyline points="79.0,171.0 125.0,171.0 125.0,125.0 171.0,125.0" fill="none" stroke="#0072B2" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="33.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="33.0" r="13" fill="#CC79A7"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="125.0" cy="79.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#0072B2"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="125.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="125.0" cy="125.0" r="17" fill="#0072B2"/>
+<circle cx="171.0" cy="125.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="171.0" cy="125.0" r="17" fill="#0072B2"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="171.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="79.0" cy="171.0" r="17" fill="#0072B2"/>
+<circle cx="125.0" cy="171.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="125.0" cy="171.0" r="17" fill="#0072B2"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#CC79A7"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="125.0" r="21" class="mark"/>
+<text x="125.0" y="100.0" class="marktext">previous</text>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><figcaption>Before: chain of 4. Player clicks the previous dot (marked).</figcaption></figure><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>120</b></span></div><svg class="board" viewBox="0 0 342 342" width="342" role="img" aria-label="board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<polyline points="79.0,171.0 125.0,171.0 125.0,125.0" fill="none" stroke="#0072B2" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="33.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="33.0" r="13" fill="#CC79A7"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="125.0" cy="79.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#0072B2"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="125.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="125.0" cy="125.0" r="17" fill="#0072B2"/>
+<circle cx="171.0" cy="125.0" r="13" fill="#0072B2"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="171.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="79.0" cy="171.0" r="17" fill="#0072B2"/>
+<circle cx="125.0" cy="171.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="125.0" cy="171.0" r="17" fill="#0072B2"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#CC79A7"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#009E73"/>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><figcaption>After: the last dot left the chain; chain of 3.</figcaption></figure></div>
+<ul class="notes"><li>Dragging back onto the previous dot does the same.</li></ul>
+</section>
+<section data-ac="AC-8">
+<h2>AC-8 — 1-dot chain ended</h2>
+<div class="frames"><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>120</b></span></div><svg class="board" viewBox="0 0 342 342" width="342" role="img" aria-label="board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="33.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="33.0" r="13" fill="#CC79A7"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="125.0" cy="79.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#0072B2"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="125.0" r="13" fill="#0072B2"/>
+<circle cx="171.0" cy="125.0" r="13" fill="#0072B2"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="171.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="79.0" cy="171.0" r="17" fill="#0072B2"/>
+<circle cx="125.0" cy="171.0" r="13" fill="#0072B2"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#CC79A7"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="171.0" r="21" class="mark"/>
+<text x="79.0" y="146.0" class="marktext">click again</text>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><figcaption>Chain of 1. Player clicks that same dot again.</figcaption></figure><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>120</b></span></div><svg class="board" viewBox="0 0 342 342" width="342" role="img" aria-label="board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="33.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="33.0" r="13" fill="#CC79A7"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="125.0" cy="79.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#0072B2"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="125.0" r="13" fill="#0072B2"/>
+<circle cx="171.0" cy="125.0" r="13" fill="#0072B2"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="171.0" r="13" fill="#0072B2"/>
+<circle cx="125.0" cy="171.0" r="13" fill="#0072B2"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#CC79A7"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#009E73"/>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><figcaption>Chain ended: nothing removed, score still 120.</figcaption></figure></div>
+<ul class="notes"></ul>
+</section>
+<section data-ac="AC-7 AC-10">
+<h2>AC-7, AC-10 — Chain cleared</h2>
+<div class="frames"><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>120</b></span></div><svg class="board" viewBox="0 0 342 342" width="342" role="img" aria-label="board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<polyline points="79.0,171.0 125.0,171.0 125.0,125.0 171.0,125.0" fill="none" stroke="#0072B2" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="33.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="33.0" r="13" fill="#CC79A7"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="125.0" cy="79.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#0072B2"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="125.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="125.0" cy="125.0" r="17" fill="#0072B2"/>
+<circle cx="171.0" cy="125.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="171.0" cy="125.0" r="17" fill="#0072B2"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="171.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="79.0" cy="171.0" r="17" fill="#0072B2"/>
+<circle cx="125.0" cy="171.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="125.0" cy="171.0" r="17" fill="#0072B2"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#CC79A7"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="125.0" r="21" class="mark"/>
+<text x="171.0" y="100.0" class="marktext">last dot</text>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><figcaption>Chain of 4. Player clicks the last dot.</figcaption></figure><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>170</b> <span class="delta">+50</span></span></div><svg class="board" viewBox="0 0 342 342" width="342" role="img" aria-label="board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="33.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="33.0" r="13" fill="#CC79A7"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="125.0" cy="79.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#0072B2"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="125.0" r="13" class="empty"/>
+<circle cx="171.0" cy="125.0" r="13" class="empty"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="171.0" r="13" class="empty"/>
+<circle cx="125.0" cy="171.0" r="13" class="empty"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#CC79A7"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#009E73"/>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><figcaption>The 4 dots are removed; score 120 → 170 (4×10 + 1×10 bonus).</figcaption></figure></div>
+<ul class="notes"><li>Points shown briefly next to the score as <b>+50</b>.</li><li>Scoring: 2 dots → 20, 3 → 30, 4 → 50, 5 → 70.</li></ul>
+</section>
+<section data-ac="AC-11 AC-12 AC-13">
+<h2>AC-11, AC-12, AC-13 — Gravity and refill</h2>
+<div class="frames"><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>170</b></span></div><svg class="board" viewBox="0 0 342 342" width="342" role="img" aria-label="board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="33.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="33.0" r="13" fill="#CC79A7"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="125.0" cy="79.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#0072B2"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="125.0" r="13" class="empty"/>
+<circle cx="171.0" cy="125.0" r="13" class="empty"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="171.0" r="13" class="empty"/>
+<circle cx="125.0" cy="171.0" r="13" class="empty"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#CC79A7"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#009E73"/>
+<line x1="79.0" y1="141.0" x2="79.0" y2="154.0" class="arrow" marker-end="url(#ah)"/>
+<line x1="125.0" y1="95.0" x2="125.0" y2="154.0" class="arrow" marker-end="url(#ah)"/>
+<line x1="171.0" y1="95.0" x2="171.0" y2="108.0" class="arrow" marker-end="url(#ah)"/>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><figcaption>1 · Gravity: dots above the gaps fall down (arrows).</figcaption></figure><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>170</b></span></div><svg class="board" viewBox="0 -46 342 388" width="342" role="img" aria-label="board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="33.0" r="13" class="empty"/>
+<circle cx="125.0" cy="33.0" r="13" class="empty"/>
+<circle cx="171.0" cy="33.0" r="13" class="empty"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="79.0" r="13" class="empty"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#0072B2"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="125.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#CC79A7"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="-13.0" r="13" fill="#0072B2" opacity=".6"/>
+<circle cx="125.0" cy="-13.0" r="13" fill="#009E73" opacity=".6"/>
+<circle cx="171.0" cy="-13.0" r="13" fill="#F0E442" opacity=".6"/>
+<line x1="79.0" y1="3.0" x2="79.0" y2="16.0" class="arrow" marker-end="url(#ah)"/>
+<line x1="125.0" y1="3.0" x2="125.0" y2="62.0" class="arrow" marker-end="url(#ah)"/>
+<line x1="171.0" y1="3.0" x2="171.0" y2="16.0" class="arrow" marker-end="url(#ah)"/>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><figcaption>2 · Refill: new random dots fall in from the top.</figcaption></figure><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>170</b></span></div><svg class="board" viewBox="0 0 342 342" width="342" role="img" aria-label="board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="125.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="33.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="79.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#0072B2"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="125.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#CC79A7"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#009E73"/>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><figcaption>3 · Board full again; input accepted again.</figcaption></figure></div>
+<ul class="notes"><li>Animation takes under about 0.5 s in total.</li><li>During frames 1–2, clicks, touches and key presses on the board are ignored.</li></ul>
+</section>
+<section data-ac="AC-9 AC-17">
+<h2>AC-9, AC-17 — Drag in progress</h2>
+<div class="frames"><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>120</b></span></div><svg class="board" viewBox="0 0 342 342" width="342" role="img" aria-label="board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<polyline points="79.0,171.0 125.0,171.0 125.0,125.0" fill="none" stroke="#0072B2" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="125.0" y1="125.0" x2="156" y2="132" stroke="#0072B2" stroke-width="8" stroke-linecap="round" opacity=".55"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="33.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="33.0" r="13" fill="#CC79A7"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="125.0" cy="79.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#0072B2"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="125.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="125.0" cy="125.0" r="17" fill="#0072B2"/>
+<circle cx="171.0" cy="125.0" r="13" fill="#0072B2"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="171.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="79.0" cy="171.0" r="17" fill="#0072B2"/>
+<circle cx="125.0" cy="171.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="125.0" cy="171.0" r="17" fill="#0072B2"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#CC79A7"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="156" cy="132" r="15" class="pointer"/>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><figcaption>Mouse button or finger held down: the chain follows the pointer; a faint line runs from the last dot to the pointer.</figcaption></figure></div>
+<ul class="notes"><li>Entering the blue dot under the pointer adds it; releasing ends the chain.</li><li>Release with 2+ dots clears the chain (as in “Chain cleared”); with 1 dot nothing is removed.</li></ul>
+</section>
+<section data-ac="AC-9 AC-17">
+<h2>AC-9, AC-17 — Drag back onto the last dot</h2>
+<div class="frames"><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>120</b></span></div><svg class="board" viewBox="0 0 342 342" width="342" role="img" aria-label="board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<polyline points="79.0,171.0 125.0,171.0 125.0,125.0" fill="none" stroke="#0072B2" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="33.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="33.0" r="13" fill="#CC79A7"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="125.0" cy="79.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#0072B2"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="125.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="125.0" cy="125.0" r="17" fill="#0072B2"/>
+<circle cx="171.0" cy="125.0" r="13" fill="#0072B2"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="171.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="79.0" cy="171.0" r="17" fill="#0072B2"/>
+<circle cx="125.0" cy="171.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="125.0" cy="171.0" r="17" fill="#0072B2"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#CC79A7"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#009E73"/>
+<path d="M125,125 C140,95 140,85 125,79 C110,85 110,100 125,118" fill="none" class="arrow" stroke-dasharray="4 4" marker-end="url(#ah)"/>
+<circle cx="125.0" cy="79.0" r="21" class="mark"/>
+<text x="125.0" y="54.0" class="marktext">ignored</text>
+<circle cx="125" cy="125" r="15" class="pointer"/>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><figcaption>Dragging a chain of 3: the pointer passed over the orange dot (ignored) and came back onto the last dot. Nothing happens; the chain stays at 3 and the drag goes on.</figcaption></figure></div>
+<ul class="notes"><li>Re-entering the last dot during a drag does nothing; only releasing ends the chain.</li><li>The same applies to a finger on a touchscreen.</li></ul>
+</section>
+<section data-ac="AC-18">
+<h2>AC-18 — Keyboard focus cursor</h2>
+<div class="frames"><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>0</b></span></div><svg class="board" viewBox="0 0 342 342" width="342" role="img" aria-label="board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="33.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="33.0" r="13" fill="#CC79A7"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="125.0" cy="79.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#0072B2"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="125.0" r="13" fill="#0072B2"/>
+<circle cx="171.0" cy="125.0" r="13" fill="#0072B2"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="171.0" r="13" fill="#0072B2"/>
+<circle cx="125.0" cy="171.0" r="13" fill="#0072B2"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#CC79A7"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#009E73"/>
+<rect x="12.0" y="12.0" width="42" height="42" rx="10" class="focus"/>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><p class="hint">Arrow keys move · Enter / Space select</p><figcaption>1 · New game (or after <i>Play again</i>): once the board has keyboard focus (Tab or an arrow key), the cursor is on the top-left dot.</figcaption></figure><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>120</b></span></div><svg class="board" viewBox="0 0 342 342" width="342" role="img" aria-label="board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<polyline points="79.0,171.0 125.0,171.0 125.0,125.0" fill="none" stroke="#0072B2" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="33.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="33.0" r="13" fill="#CC79A7"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="125.0" cy="79.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#0072B2"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="125.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="125.0" cy="125.0" r="17" fill="#0072B2"/>
+<circle cx="171.0" cy="125.0" r="13" fill="#0072B2"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="171.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="79.0" cy="171.0" r="17" fill="#0072B2"/>
+<circle cx="125.0" cy="171.0" r="22" fill="none" stroke="#0072B2" stroke-width="3" opacity=".7"/>
+<circle cx="125.0" cy="171.0" r="17" fill="#0072B2"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#CC79A7"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#009E73"/>
+<rect x="150.0" y="104.0" width="42" height="42" rx="10" class="focus"/>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><p class="hint">Arrow keys move · Enter / Space select</p><figcaption>2 · Arrow keys moved the cursor to the next blue dot; Enter or Space would add it.</figcaption></figure><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>170</b></span></div><svg class="board" viewBox="0 0 342 342" width="342" role="img" aria-label="board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="125.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="33.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#0072B2"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="79.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#0072B2"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#CC79A7"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="125.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#009E73"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#E69F00"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#F0E442"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#F0E442"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#CC79A7"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#009E73"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#CC79A7"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#E69F00"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#F0E442"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#009E73"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#CC79A7"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#E69F00"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#009E73"/>
+<rect x="150.0" y="104.0" width="42" height="42" rx="10" class="focus"/>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><p class="hint">Arrow keys move · Enter / Space select</p><figcaption>3 · Enter added that dot, Enter again cleared the chain of 4; after the refill the cursor is still on the same cell.</figcaption></figure></div>
+<ul class="notes"><li>The cursor stops at the board edge.</li><li>A hint line under the board shows the keys.</li><li>The cursor and hint are shown only while the board has keyboard focus; during mouse or touch play no cursor is drawn (as in every other situation on this page).</li></ul>
+</section>
+<section data-ac="AC-15">
+<h2>AC-15 — Game over</h2>
+<div class="frames"><figure class="frame"><div class="hud"><span class="title">Dots</span><span class="score">Score <b>480</b></span></div><div class="overwrap"><svg class="board" viewBox="0 0 342 342" width="342" role="img" aria-label="board">
+<rect x="0" y="0" width="342" height="342" rx="16" class="bg"/>
+<circle cx="33.0" cy="33.0" r="13" fill="#0072B2" opacity=".45"/>
+<circle cx="79.0" cy="33.0" r="13" fill="#E69F00" opacity=".45"/>
+<circle cx="125.0" cy="33.0" r="13" fill="#009E73" opacity=".45"/>
+<circle cx="171.0" cy="33.0" r="13" fill="#CC79A7" opacity=".45"/>
+<circle cx="217.0" cy="33.0" r="13" fill="#F0E442" opacity=".45"/>
+<circle cx="263.0" cy="33.0" r="13" fill="#0072B2" opacity=".45"/>
+<circle cx="309.0" cy="33.0" r="13" fill="#E69F00" opacity=".45"/>
+<circle cx="33.0" cy="79.0" r="13" fill="#009E73" opacity=".45"/>
+<circle cx="79.0" cy="79.0" r="13" fill="#CC79A7" opacity=".45"/>
+<circle cx="125.0" cy="79.0" r="13" fill="#F0E442" opacity=".45"/>
+<circle cx="171.0" cy="79.0" r="13" fill="#0072B2" opacity=".45"/>
+<circle cx="217.0" cy="79.0" r="13" fill="#E69F00" opacity=".45"/>
+<circle cx="263.0" cy="79.0" r="13" fill="#009E73" opacity=".45"/>
+<circle cx="309.0" cy="79.0" r="13" fill="#CC79A7" opacity=".45"/>
+<circle cx="33.0" cy="125.0" r="13" fill="#F0E442" opacity=".45"/>
+<circle cx="79.0" cy="125.0" r="13" fill="#0072B2" opacity=".45"/>
+<circle cx="125.0" cy="125.0" r="13" fill="#E69F00" opacity=".45"/>
+<circle cx="171.0" cy="125.0" r="13" fill="#009E73" opacity=".45"/>
+<circle cx="217.0" cy="125.0" r="13" fill="#CC79A7" opacity=".45"/>
+<circle cx="263.0" cy="125.0" r="13" fill="#F0E442" opacity=".45"/>
+<circle cx="309.0" cy="125.0" r="13" fill="#0072B2" opacity=".45"/>
+<circle cx="33.0" cy="171.0" r="13" fill="#E69F00" opacity=".45"/>
+<circle cx="79.0" cy="171.0" r="13" fill="#009E73" opacity=".45"/>
+<circle cx="125.0" cy="171.0" r="13" fill="#CC79A7" opacity=".45"/>
+<circle cx="171.0" cy="171.0" r="13" fill="#F0E442" opacity=".45"/>
+<circle cx="217.0" cy="171.0" r="13" fill="#0072B2" opacity=".45"/>
+<circle cx="263.0" cy="171.0" r="13" fill="#E69F00" opacity=".45"/>
+<circle cx="309.0" cy="171.0" r="13" fill="#009E73" opacity=".45"/>
+<circle cx="33.0" cy="217.0" r="13" fill="#CC79A7" opacity=".45"/>
+<circle cx="79.0" cy="217.0" r="13" fill="#F0E442" opacity=".45"/>
+<circle cx="125.0" cy="217.0" r="13" fill="#0072B2" opacity=".45"/>
+<circle cx="171.0" cy="217.0" r="13" fill="#E69F00" opacity=".45"/>
+<circle cx="217.0" cy="217.0" r="13" fill="#009E73" opacity=".45"/>
+<circle cx="263.0" cy="217.0" r="13" fill="#CC79A7" opacity=".45"/>
+<circle cx="309.0" cy="217.0" r="13" fill="#F0E442" opacity=".45"/>
+<circle cx="33.0" cy="263.0" r="13" fill="#0072B2" opacity=".45"/>
+<circle cx="79.0" cy="263.0" r="13" fill="#E69F00" opacity=".45"/>
+<circle cx="125.0" cy="263.0" r="13" fill="#009E73" opacity=".45"/>
+<circle cx="171.0" cy="263.0" r="13" fill="#CC79A7" opacity=".45"/>
+<circle cx="217.0" cy="263.0" r="13" fill="#F0E442" opacity=".45"/>
+<circle cx="263.0" cy="263.0" r="13" fill="#0072B2" opacity=".45"/>
+<circle cx="309.0" cy="263.0" r="13" fill="#E69F00" opacity=".45"/>
+<circle cx="33.0" cy="309.0" r="13" fill="#009E73" opacity=".45"/>
+<circle cx="79.0" cy="309.0" r="13" fill="#CC79A7" opacity=".45"/>
+<circle cx="125.0" cy="309.0" r="13" fill="#F0E442" opacity=".45"/>
+<circle cx="171.0" cy="309.0" r="13" fill="#0072B2" opacity=".45"/>
+<circle cx="217.0" cy="309.0" r="13" fill="#E69F00" opacity=".45"/>
+<circle cx="263.0" cy="309.0" r="13" fill="#009E73" opacity=".45"/>
+<circle cx="309.0" cy="309.0" r="13" fill="#CC79A7" opacity=".45"/>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahead"/></marker></defs>
+</svg><div class="overlay"><p class="ovt">Game over</p><p>Final score</p><p class="final">480</p><button type="button">Play again</button></div></div><figcaption>After a refill no two adjacent dots share a color.</figcaption></figure></div>
+<ul class="notes"><li>The board no longer accepts input; the panel sits over the dimmed board.</li><li><i>Play again</i> leads to “New game” (score 0, new board).</li></ul>
+</section>
+</main>
+</body>
+</html>
