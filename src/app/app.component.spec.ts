@@ -24,4 +24,15 @@ describe('App', () => {
     expect(setItem).not.toHaveBeenCalled();
     setItem.mockRestore();
   });
+
+  it('AC_1_opening_the_page_starts_a_game_against_the_computer_with_the_players_turn', async () => {
+    const harness = await RouterTestingHarness.create('/');
+    const page = harness.routeNativeElement as HTMLElement;
+    const text = (testId: string) => page.querySelector(`[data-testid="${testId}"]`)?.textContent?.trim();
+
+    expect(page.querySelectorAll('[data-testid="dot"]').length).toBe(49);
+    expect(text('score')).toBe('0');
+    expect(text('computer-score')).toBe('0');
+    expect(text('turn-indicator')).toBe('Your turn');
+  });
 });

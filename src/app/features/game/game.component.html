@@ -1,13 +1,43 @@
 <div class="game">
   <header class="hud">
     <span class="title">Dots</span>
-    <span class="score">
-      Score <b data-testid="score">{{ game.score() }}</b>
-      @if (game.pointsEarned(); as points) {
-        <span class="points-earned" data-testid="points-earned">+{{ points }}</span>
-      }
-    </span>
   </header>
+
+  <div class="scores">
+    <div class="side" data-testid="player-side" [class.active]="!game.gameOver() && game.turn() === 'player'">
+      <span class="label">You</span>
+      <b data-testid="score">{{ game.playerScore() }}</b>
+      @if (game.pointsEarned(); as earned) {
+        @if (earned.side === 'player') {
+          <span class="points-earned" data-testid="points-earned">+{{ earned.points }}</span>
+        }
+      }
+    </div>
+    <div class="side computer" data-testid="computer-side" [class.active]="!game.gameOver() && game.turn() === 'computer'">
+      <span class="label">Computer</span>
+      <b data-testid="computer-score">{{ game.computerScore() }}</b>
+      @if (game.pointsEarned(); as earned) {
+        @if (earned.side === 'computer') {
+          <span class="points-earned" data-testid="computer-points-earned">+{{ earned.points }}</span>
+        }
+      }
+    </div>
+  </div>
+
+  <p
+    class="turn-indicator"
+    data-testid="turn-indicator"
+    [class.computer]="!game.gameOver() && game.turn() === 'computer'"
+    [class.over]="game.gameOver()"
+  >
+    @if (game.gameOver()) {
+      Game over
+    } @else if (game.turn() === 'player') {
+      Your turn
+    } @else {
+      Computer’s turn…
+    }
+  </p>
 
   <div class="board-wrap">
     <svg
@@ -19,6 +49,7 @@
       aria-label="Dots board"
       aria-describedby="board-hint"
       [class.game-over]="game.gameOver()"
+      [class.blocked]="!game.gameOver() && game.turn() === 'computer'"
       [attr.viewBox]="'0 0 ' + boardPixels + ' ' + boardPixels"
       (pointerdown)="onBoardPointerDown()"
       (focus)="onBoardFocus()"
@@ -95,9 +126,17 @@
 
     @if (game.gameOver()) {
       <div class="game-over-panel" data-testid="game-over" role="dialog" aria-label="Game over">
-        <p class="game-over-title">Game over</p>
-        <p>Final score</p>
-        <p class="final-score" data-testid="final-score">{{ game.score() }}</p>
+        <p class="outcome" data-testid="outcome">{{ game.outcome() }}</p>
+        <div class="final-scores">
+          <div>
+            <span>You</span>
+            <b class="final-score" data-testid="final-score">{{ game.playerScore() }}</b>
+          </div>
+          <div>
+            <span>Computer</span>
+            <b class="final-score" data-testid="final-computer-score">{{ game.computerScore() }}</b>
+          </div>
+        </div>
         <button type="button" data-testid="play-again" (click)="game.newGame()">Play again</button>
       </div>
     }

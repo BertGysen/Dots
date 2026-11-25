@@ -9,6 +9,7 @@ import {
   chainScore,
   clear,
   deal,
+  findComputerMove,
   hasValidMove,
   isAdjacent,
   isCrossingLink,
@@ -30,7 +31,25 @@ export const POINTS_EARNED_DURATION_MS = 1000;
 /** How long the dots of a too-short chain shake. */
 export const SHAKE_DURATION_MS = 300;
 
+/** Pause between the end of the player's refill and the computer's first dot. */
+export const COMPUTER_PAUSE_MS = 400;
+
+/** The computer's chain is drawn dot by dot over this time in total. */
+export const COMPUTER_DRAW_MS = 1000;
+
+/** How long the computer's full chain stays visible before it is cleared. */
+export const COMPUTER_HOLD_MS = 300;
+
 export type FocusCursorDirection = 'up' | 'down' | 'left' | 'right';
+
+export type Side = 'player' | 'computer';
+
+export type Outcome = 'You win' | 'Computer wins' | 'Draw';
+
+export interface PointsEarned {
+  readonly side: Side;
+  readonly points: number;
+}
 
 interface Drag {
   readonly pressedDot: Position;
@@ -44,8 +63,10 @@ export class GameService {
 
   readonly board = signal<Board>(deal(this.random));
   readonly chain = signal<readonly Position[]>([]);
-  readonly score = signal(0);
-  readonly pointsEarned = signal<number | null>(null);
+  readonly playerScore = signal(0);
+  readonly computerScore = signal(0);
+  readonly turn = signal<Side>('player');
+  readonly pointsEarned = signal<PointsEarned | null>(null);
   readonly animating = signal(false);
   readonly gameOver = signal(false);
   readonly focusCursor = signal<Position>({ row: 0, column: 0 });
@@ -57,16 +78,27 @@ export class GameService {
     return startingDot ? this.board()[startingDot.row][startingDot.column]?.color : undefined;
   });
 
+  readonly outcome = computed<Outcome>(() => {
+    const difference = this.playerScore() - this.computerScore();
+    return difference > 0 ? 'You win' : difference < 0 ? 'Computer wins' : 'Draw';
+  });
+
   private drag: Drag | null = null;
   private pointsEarnedTimer?: ReturnType<typeof setTimeout>;
   private shakeTimer?: ReturnType<typeof setTimeout>;
+  private turnTimers: ReturnType<typeof setTimeout>[] = [];
 
   newGame(): void {
     clearTimeout(this.pointsEarnedTimer);
+    this.turnTimers.forEach(clearTimeout);
+    this.turnTimers = [];
     this.stopShake();
     this.board.set(deal(this.random));
     this.chain.set([]);
-    this.score.set(0);
+    this.playerScore.set(0);
+    this.computerScore.set(0);
+    this.turn.set('player');
+    this.animating.set(false);
     this.pointsEarned.set(null);
     this.gameOver.set(false);
     this.focusCursor.set({ row: 0, column: 0 });
@@ -109,7 +141,7 @@ export class GameService {
   }
 
   moveFocusCursor(direction: FocusCursorDirection): void {
-    if (!this.acceptsInput()) return;
+    if (!this.acceptsArrowKeys()) return;
     const { row, column } = this.focusCursor();
     const clamp = (n: number) => Math.min(BOARD_SIZE - 1, Math.max(0, n));
     this.focusCursor.set({
@@ -123,7 +155,12 @@ export class GameService {
   }
 
   private acceptsInput(): boolean {
-    return !this.animating() && !this.gameOver();
+    return !this.animating() && !this.gameOver() && this.turn() === 'player';
+  }
+
+  /** Arrow keys stay usable during the whole computer's turn, so a keyboard player can prepare. */
+  acceptsArrowKeys(): boolean {
+    return !this.gameOver() && (this.turn() === 'computer' || !this.animating());
   }
 
   private endDrag(): void {
@@ -167,20 +204,56 @@ export class GameService {
       if (chain.length > 1) this.shake(chain);
       return;
     }
+    this.clearChain('player', chain);
+  }
 
+  /** Removes the chain, scores it for `side`, and after gravity and refill ends that side's turn. */
+  private clearChain(side: Side, chain: readonly Position[]): void {
+    this.chain.set([]);
     const points = chainScore(chain.length);
-    this.score.update((score) => score + points);
-    this.showPointsEarned(points);
+    (side === 'player' ? this.playerScore : this.computerScore).update((score) => score + points);
+    this.showPointsEarned(side, points);
 
     this.animating.set(true);
     this.board.set(applyGravity(clear(this.board(), chain)));
-    setTimeout(() => {
+    this.after(FALL_DURATION_MS, () => {
       this.board.set(refill(this.board(), this.random));
-      setTimeout(() => {
+      this.after(FALL_DURATION_MS, () => {
         this.animating.set(false);
-        if (!hasValidMove(this.board())) this.gameOver.set(true);
-      }, FALL_DURATION_MS);
-    }, FALL_DURATION_MS);
+        if (!hasValidMove(this.board())) {
+          this.gameOver.set(true);
+          return;
+        }
+        if (side === 'player') {
+          this.turn.set('computer');
+          this.after(COMPUTER_PAUSE_MS, () => this.playComputerMove());
+        } else {
+          this.turn.set('player');
+        }
+      });
+    });
+  }
+
+  private playComputerMove(): void {
+    const computerMove = findComputerMove(this.board());
+    if (computerMove.length === 0) {
+      this.gameOver.set(true);
+      return;
+    }
+    const step = COMPUTER_DRAW_MS / (computerMove.length - 1);
+    this.chain.set(computerMove.slice(0, 1));
+    for (let i = 1; i < computerMove.length; i++) {
+      this.after(i * step, () => this.chain.set(computerMove.slice(0, i + 1)));
+    }
+    this.after(COMPUTER_DRAW_MS + COMPUTER_HOLD_MS, () => this.clearChain('computer', computerMove));
+  }
+
+  private after(ms: number, action: () => void): void {
+    const timer = setTimeout(() => {
+      this.turnTimers = this.turnTimers.filter((t) => t !== timer);
+      action();
+    }, ms);
+    this.turnTimers.push(timer);
   }
 
   private shake(dots: readonly Position[]): void {
@@ -194,9 +267,9 @@ export class GameService {
     this.shakingDots.set([]);
   }
 
-  private showPointsEarned(points: number): void {
+  private showPointsEarned(side: Side, points: number): void {
     clearTimeout(this.pointsEarnedTimer);
-    this.pointsEarned.set(points);
+    this.pointsEarned.set({ side, points });
     this.pointsEarnedTimer = setTimeout(() => this.pointsEarned.set(null), POINTS_EARNED_DURATION_MS);
   }
 }

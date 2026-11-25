@@ -140,7 +140,7 @@ export class GameComponent {
     const direction = ARROW_KEYS[event.key];
     if (direction) {
       event.preventDefault();
-      if (this.game.animating() || this.game.gameOver()) return;
+      if (!this.game.acceptsArrowKeys()) return;
       this.keyboardFocus.set(true);
       this.game.moveFocusCursor(direction);
     } else if (event.key === 'Enter' || event.key === ' ') {
