@@ -5,7 +5,7 @@ status: approved
 has_ui: true
 mock: approved
 technologies: [angular]
-review_rounds: {spec: 1, code: 0, pr: 0}
+review_rounds: {spec: 1, code: 1, pr: 0}
 approvals:
   - step: shape
     by: Bert Gysen
