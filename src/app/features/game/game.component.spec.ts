@@ -1,7 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BOARD_SIZE, Board, COLOR_PALETTE, hasValidMove } from './board.model';
 import { GameComponent } from './game.component';
-import { FALL_DURATION_MS, GameService, RANDOM_SOURCE, SHAKE_DURATION_MS } from './game.service';
+import {
+  COMPUTER_DRAW_MS,
+  COMPUTER_HOLD_MS,
+  COMPUTER_PAUSE_MS,
+  FALL_DURATION_MS,
+  GameService,
+  RANDOM_SOURCE,
+  SHAKE_DURATION_MS,
+} from './game.service';
 
 const [B, O, G, P, Y] = [0, 1, 2, 3, 4];
 
@@ -123,6 +131,12 @@ describe('GameComponent', () => {
 
   function finishAnimation(): void {
     vi.advanceTimersByTime(2 * FALL_DURATION_MS);
+    render();
+  }
+
+  /** Plays out the computer's turn that follows a player's clear (DOTS-103), so the player can move again. */
+  function finishComputerTurn(): void {
+    vi.advanceTimersByTime(COMPUTER_PAUSE_MS + COMPUTER_DRAW_MS + COMPUTER_HOLD_MS + 2 * FALL_DURATION_MS);
     render();
   }
 
@@ -270,6 +284,7 @@ describe('GameComponent', () => {
     click(2, 2);
     click(2, 2);
     finishAnimation();
+    finishComputerTurn();
     useBoard(MOCK_BOARD);
     click(3, 1);
     click(3, 2);
@@ -326,6 +341,7 @@ describe('GameComponent', () => {
     vi.advanceTimersByTime(FALL_DURATION_MS);
     render();
     expect(2 * FALL_DURATION_MS).toBeLessThan(500);
+    finishComputerTurn();
     click(0, 0);
     expect(game.chain()).toEqual([{ row: 0, column: 0 }]);
   });
@@ -530,6 +546,7 @@ describe('GameComponent', () => {
     releasePointer();
     expect(text('score')).toBe('30');
     finishAnimation();
+    finishComputerTurn();
 
     useBoard(MOCK_BOARD);
     click(3, 1);
@@ -933,6 +950,7 @@ describe('GameComponent', () => {
       releasePointer();
       expect(text('score')).toBe('50');
       finishAnimation();
+      finishComputerTurn();
 
       useBoard(MOCK_BOARD);
       board().dispatchEvent(new FocusEvent('focus'));
@@ -1165,6 +1183,340 @@ describe('GameComponent', () => {
       expect(game.chain().length).toBe(3);
       const cell = dotAt(3, 2).querySelector('.cell')!;
       expect([cell.getAttribute('width'), cell.getAttribute('height')]).toEqual(['46', '46']);
+    });
+  });
+
+  describe('DOTS-103', () => {
+    /** Background of orange, green, pink and yellow in 2×2 tiles; only the listed cells are blue. */
+    function blueAt(blueCells: [number, number][]): number[][] {
+      return Array.from({ length: BOARD_SIZE }, (_, row) =>
+        Array.from({ length: BOARD_SIZE }, (_, column) =>
+          blueCells.some(([r, c]) => r === row && c === column) ? B : 1 + (row % 2) * 2 + (column % 2),
+        ),
+      );
+    }
+
+    /** The known test board: its longest valid chain is the 5 blue dots from (3,1) to (6,4). */
+    const KNOWN_TEST_BOARD = blueAt([[0, 0], [0, 1], [0, 2], [3, 1], [4, 2], [4, 3], [5, 4], [6, 4]]);
+    const KNOWN_COMPUTER_MOVE = [[3, 1], [4, 2], [4, 3], [5, 4], [6, 4]].map(([row, column]) => ({ row, column }));
+
+    function root(): HTMLElement {
+      return fixture.nativeElement as HTMLElement;
+    }
+
+    function isActive(testId: string): boolean {
+      return root().querySelector(`[data-testid="${testId}"]`)!.classList.contains('active');
+    }
+
+    /** The player clears the 3 blue dots of MOCK_BOARD for 30 points; refills are blue. */
+    function playerClearsThreeDots(): void {
+      useBoard(MOCK_BOARD);
+      refillWithBlue();
+      click(3, 1);
+      click(3, 2);
+      click(2, 2);
+      click(2, 2);
+    }
+
+    function advance(ms: number): void {
+      vi.advanceTimersByTime(ms);
+      render();
+    }
+
+    function playAgain(): void {
+      root().querySelector<HTMLButtonElement>('[data-testid="play-again"]')!.click();
+      render();
+    }
+
+    it('AC_1_new_game_shows_both_scores_at_0_and_the_players_turn', () => {
+      expect(text('score')).toBe('0');
+      expect(text('computer-score')).toBe('0');
+      expect(text('turn-indicator')).toBe('Your turn');
+      expect(isActive('player-side')).toBe(true);
+      expect(isActive('computer-side')).toBe(false);
+      expect(root().querySelectorAll('[data-testid="dot"]').length).toBe(49);
+      expect(root().textContent).not.toMatch(/solo/i);
+      click(0, 0);
+      expect(game.chain()).toEqual([{ row: 0, column: 0 }]);
+    });
+
+    it('AC_2_clearing_a_3_plus_chain_scores_for_the_player_and_after_the_refill_it_is_the_computers_turn', () => {
+      playerClearsThreeDots();
+
+      expect(text('score')).toBe('30');
+      expect(text('computer-score')).toBe('0');
+      expect(text('points-earned')).toBe('+30');
+      expect(text('turn-indicator')).toBe('Your turn');
+
+      finishAnimation();
+
+      expect(text('turn-indicator')).toBe('Computer’s turn…');
+      expect(game.turn()).toBe('computer');
+    });
+
+    it('AC_2_the_player_can_clear_a_chain_by_drag_and_by_keyboard', () => {
+      useBoard(MOCK_BOARD);
+      refillWithBlue();
+      press(3, 1);
+      moveTo(3, 2);
+      moveTo(2, 2);
+      releasePointer();
+      expect(text('score')).toBe('30');
+      finishAnimation();
+      finishComputerTurn();
+
+      useBoard(MOCK_BOARD);
+      board().dispatchEvent(new FocusEvent('focus'));
+      game.focusCursor.set({ row: 3, column: 1 });
+      key('Enter');
+      key('ArrowRight');
+      key('Enter');
+      key('ArrowUp');
+      key('Enter');
+      key('Enter');
+      expect(Number(text('score'))).toBe(60);
+    });
+
+    it('AC_3_ending_a_1_or_2_dot_chain_keeps_the_players_turn', () => {
+      useBoard(MOCK_BOARD);
+      click(3, 1);
+      click(3, 2);
+      click(3, 2);
+
+      expect(root().querySelectorAll('[data-testid="dot"].shaking').length).toBe(2);
+      click(0, 0);
+      click(0, 0);
+      advance(5000);
+
+      expect(game.turn()).toBe('player');
+      expect(text('turn-indicator')).toBe('Your turn');
+      expect(text('score')).toBe('0');
+      expect(text('computer-score')).toBe('0');
+      click(3, 1);
+      expect(game.chain()).toEqual([{ row: 3, column: 1 }]);
+    });
+
+    it('AC_4_turns_alternate_and_each_turn_clears_exactly_one_chain', () => {
+      playerClearsThreeDots();
+      finishAnimation();
+      expect(game.turn()).toBe('computer');
+
+      useBoard(KNOWN_TEST_BOARD);
+      finishComputerTurn();
+      expect(game.turn()).toBe('player');
+      expect(text('computer-score')).toBe('70');
+
+      advance(10_000);
+      expect(game.turn()).toBe('player');
+      expect(text('computer-score')).toBe('70');
+
+      playerClearsThreeDots();
+      finishAnimation();
+      expect(game.turn()).toBe('computer');
+      expect(text('score')).toBe('60');
+    });
+
+    it('AC_5_both_scores_stay_visible_and_change_only_for_the_side_that_cleared', () => {
+      playerClearsThreeDots();
+      finishAnimation();
+      useBoard(KNOWN_TEST_BOARD);
+      advance(COMPUTER_PAUSE_MS + COMPUTER_DRAW_MS / 2);
+
+      expect(text('points-earned')).toBeUndefined();
+      expect(text('score')).toBe('30');
+      expect(text('computer-score')).toBe('0');
+
+      advance(COMPUTER_DRAW_MS / 2 + COMPUTER_HOLD_MS);
+
+      expect(text('score')).toBe('30');
+      expect(text('computer-score')).toBe('70');
+      expect(text('computer-points-earned')).toBe('+70');
+      expect(text('points-earned')).toBeUndefined();
+    });
+
+    it('AC_6_the_turn_indicator_shows_whose_turn_it_is', () => {
+      expect(text('turn-indicator')).toBe('Your turn');
+
+      playerClearsThreeDots();
+      finishAnimation();
+      expect(text('turn-indicator')).toBe('Computer’s turn…');
+      expect(isActive('computer-side')).toBe(true);
+      expect(isActive('player-side')).toBe(false);
+
+      useBoard(KNOWN_TEST_BOARD);
+      advance(COMPUTER_PAUSE_MS + COMPUTER_DRAW_MS + COMPUTER_HOLD_MS + FALL_DURATION_MS);
+      expect(text('turn-indicator')).toBe('Computer’s turn…');
+
+      advance(FALL_DURATION_MS);
+      expect(text('turn-indicator')).toBe('Your turn');
+      expect(isActive('player-side')).toBe(true);
+      expect(isActive('computer-side')).toBe(false);
+    });
+
+    it('AC_7_clicks_taps_drags_and_enter_are_ignored_during_the_computers_turn', () => {
+      playerClearsThreeDots();
+      finishAnimation();
+      useBoard(KNOWN_TEST_BOARD);
+      expect(board().classList.contains('blocked')).toBe(true);
+
+      click(0, 0);
+      click(0, 0, 'touch');
+      press(0, 0);
+      moveTo(0, 1);
+      releasePointer();
+      board().dispatchEvent(new FocusEvent('focus'));
+      key('Enter');
+      key(' ');
+      expect(game.chain()).toEqual([]);
+
+      advance(COMPUTER_PAUSE_MS);
+      click(0, 0);
+      expect(game.chain()).toEqual([{ row: 3, column: 1 }]);
+      expect(text('score')).toBe('30');
+    });
+
+    it('AC_7_arrow_keys_still_move_the_focus_cursor_during_the_computers_turn', () => {
+      playerClearsThreeDots();
+      finishAnimation();
+      useBoard(KNOWN_TEST_BOARD);
+      board().dispatchEvent(new FocusEvent('focus'));
+
+      key('ArrowDown');
+      expect(focusCursor()).toBe('1,0');
+
+      advance(COMPUTER_PAUSE_MS + COMPUTER_DRAW_MS + COMPUTER_HOLD_MS); // the computer's refill animation runs
+      key('ArrowRight');
+      expect(focusCursor()).toBe('1,1');
+    });
+
+    it('AC_8_the_computer_plays_the_longest_chain_on_the_known_test_board', () => {
+      playerClearsThreeDots();
+      finishAnimation();
+      useBoard(KNOWN_TEST_BOARD);
+
+      advance(COMPUTER_PAUSE_MS + COMPUTER_DRAW_MS);
+
+      expect(game.chain()).toEqual(KNOWN_COMPUTER_MOVE);
+      advance(COMPUTER_HOLD_MS);
+      expect(text('computer-score')).toBe('70');
+    });
+
+    it('AC_10_the_computer_move_is_drawn_dot_by_dot_over_1_second_then_held_and_cleared', () => {
+      playerClearsThreeDots();
+      finishAnimation();
+      useBoard(KNOWN_TEST_BOARD);
+      const ids = KNOWN_COMPUTER_MOVE.map(({ row, column }) => game.board()[row][column]!.id);
+
+      advance(COMPUTER_PAUSE_MS - 1);
+      expect(chainDots()).toEqual([]);
+      advance(1);
+      expect(chainDots()).toEqual(['3,1']);
+      for (let n = 2; n <= 5; n++) {
+        advance(COMPUTER_DRAW_MS / 4);
+        expect(chainDots().length).toBe(n);
+      }
+      expect(COMPUTER_PAUSE_MS).toBe(400);
+      expect(COMPUTER_DRAW_MS).toBe(1000);
+      expect(COMPUTER_HOLD_MS).toBe(300);
+      const line = root().querySelector('[data-testid="chain-line"]');
+      expect(line?.getAttribute('stroke')).toBe(COLOR_PALETTE[B]);
+      expect(line?.getAttribute('points')?.split(' ').length).toBe(5);
+
+      advance(COMPUTER_HOLD_MS - 1);
+      expect(chainDots().length).toBe(5);
+      expect(text('computer-score')).toBe('0');
+
+      advance(1);
+      expect(chainDots()).toEqual([]);
+      expect(text('computer-score')).toBe('70');
+      const remaining = new Set(game.board().flat().map((dot) => dot?.id));
+      expect(ids.some((id) => remaining.has(id))).toBe(false);
+
+      finishAnimation();
+      expect(game.board().flat().every((dot) => dot !== null)).toBe(true);
+      expect(game.turn()).toBe('player');
+    });
+
+    it('AC_11_no_valid_move_after_the_players_refill_ends_the_game_and_the_computer_makes_no_move', () => {
+      useBoard(ONE_MOVE_BOARD);
+      pickedColors = [...ONLY_PAIRS_REFILL];
+      click(6, 0);
+      click(6, 1);
+      click(6, 2);
+      click(6, 2);
+      finishAnimation();
+
+      expect(game.gameOver()).toBe(true);
+      advance(10_000);
+      expect(text('computer-score')).toBe('0');
+      expect(game.chain()).toEqual([]);
+      expect(text('turn-indicator')).toBe('Game over');
+      expect(isActive('player-side') || isActive('computer-side')).toBe(false);
+      click(5, 0);
+      expect(game.chain()).toEqual([]);
+    });
+
+    it('AC_11_no_valid_move_after_the_computers_refill_ends_the_game', () => {
+      playerClearsThreeDots();
+      finishAnimation();
+      useBoard(ONE_MOVE_BOARD);
+      pickedColors = [...ONLY_PAIRS_REFILL];
+
+      finishComputerTurn();
+
+      expect(text('computer-score')).toBe('30');
+      expect(game.gameOver()).toBe(true);
+      expect(text('game-over')).toBeDefined();
+      click(0, 0);
+      expect(game.chain()).toEqual([]);
+    });
+
+    it('AC_12_the_result_view_shows_both_final_scores_and_the_outcome', () => {
+      const cases: [number, number, string][] = [
+        [340, 290, 'You win'],
+        [260, 310, 'Computer wins'],
+        [300, 300, 'Draw'],
+      ];
+      for (const [playerScore, computerScore, outcome] of cases) {
+        game.playerScore.set(playerScore);
+        game.computerScore.set(computerScore);
+        game.gameOver.set(true);
+        render();
+
+        expect(text('outcome')).toBe(outcome);
+        expect(text('final-score')).toBe(String(playerScore));
+        expect(text('final-computer-score')).toBe(String(computerScore));
+      }
+    });
+
+    it('AC_12_a_real_game_ending_in_a_draw_shows_draw', () => {
+      playerClearsThreeDots();
+      finishAnimation();
+      useBoard(ONE_MOVE_BOARD);
+      pickedColors = [...ONLY_PAIRS_REFILL];
+      finishComputerTurn();
+
+      expect(text('outcome')).toBe('Draw');
+    });
+
+    it('AC_13_play_again_starts_a_new_game_against_the_computer', () => {
+      playerClearsThreeDots();
+      finishAnimation();
+      useBoard(ONE_MOVE_BOARD);
+      pickedColors = [...ONLY_PAIRS_REFILL];
+      finishComputerTurn();
+      const oldIds = new Set(game.board().flat().map((dot) => dot!.id));
+      expect(text('play-again')).toBe('Play again');
+
+      playAgain();
+
+      expect(text('game-over')).toBeUndefined();
+      expect(text('score')).toBe('0');
+      expect(text('computer-score')).toBe('0');
+      expect(text('turn-indicator')).toBe('Your turn');
+      expect(game.board().flat().some((dot) => oldIds.has(dot!.id))).toBe(false);
+      click(0, 0);
+      expect(game.chain()).toEqual([{ row: 0, column: 0 }]);
     });
   });
 });

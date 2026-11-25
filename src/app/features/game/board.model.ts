@@ -100,6 +100,75 @@ function connectedGroupSize(board: Board, start: Position, visited: Set<number>)
   return size;
 }
 
+/** The search order of AC-9: up-left, up, up-right, left, right, down-left, down, down-right. */
+const SEARCH_ORDER_NEIGHBORS: readonly Position[] = [
+  { row: -1, column: -1 },
+  { row: -1, column: 0 },
+  { row: -1, column: 1 },
+  { row: 0, column: -1 },
+  { row: 0, column: 1 },
+  { row: 1, column: -1 },
+  { row: 1, column: 0 },
+  { row: 1, column: 1 },
+];
+
+/**
+ * The longest valid chain on the board; on a tie, the first one found in the search order.
+ * Returns an empty array when the board has no valid move.
+ */
+export function findComputerMove(board: Board): Position[] {
+  let best: Position[] = [];
+  const groupSizes = connectedGroupSizes(board);
+
+  // A chain never has more dots than its connected group, so a search that cannot beat the best
+  // chain so far is skipped; only a strictly longer chain may replace it, so the result is the same.
+  const search = (chain: Position[], inChain: Set<number>, groupSize: number): boolean => {
+    if (chain.length >= MINIMUM_CHAIN_LENGTH && chain.length > best.length) best = [...chain];
+    if (best.length === groupSize) return true;
+    const lastDot = chain[chain.length - 1];
+    const color = board[chain[0].row][chain[0].column]?.color;
+    for (const step of SEARCH_ORDER_NEIGHBORS) {
+      const next = { row: lastDot.row + step.row, column: lastDot.column + step.column };
+      if (next.row < 0 || next.row >= BOARD_SIZE || next.column < 0 || next.column >= BOARD_SIZE) continue;
+      const key = next.row * BOARD_SIZE + next.column;
+      if (inChain.has(key) || board[next.row][next.column]?.color !== color) continue;
+      if (isCrossingLink(chain, next)) continue;
+      chain.push(next);
+      inChain.add(key);
+      const done = search(chain, inChain, groupSize);
+      chain.pop();
+      inChain.delete(key);
+      if (done) return true;
+    }
+    return false;
+  };
+
+  for (let row = 0; row < BOARD_SIZE; row++) {
+    for (let column = 0; column < BOARD_SIZE; column++) {
+      const groupSize = groupSizes[row][column];
+      if (!board[row][column] || groupSize <= best.length || groupSize < MINIMUM_CHAIN_LENGTH) continue;
+      search([{ row, column }], new Set([row * BOARD_SIZE + column]), groupSize);
+    }
+  }
+  return best;
+}
+
+function connectedGroupSizes(board: Board): number[][] {
+  const sizes = Array.from({ length: BOARD_SIZE }, () => Array<number>(BOARD_SIZE).fill(0));
+  const visited = new Set<number>();
+  for (let row = 0; row < BOARD_SIZE; row++) {
+    for (let column = 0; column < BOARD_SIZE; column++) {
+      if (visited.has(row * BOARD_SIZE + column)) continue;
+      const before = new Set(visited);
+      const size = connectedGroupSize(board, { row, column }, visited);
+      for (const key of visited) {
+        if (!before.has(key)) sizes[Math.floor(key / BOARD_SIZE)][key % BOARD_SIZE] = size;
+      }
+    }
+  }
+  return sizes;
+}
+
 export function chainScore(dotCount: number): number {
   return dotCount * 10 + Math.max(0, dotCount - 3) * 10;
 }

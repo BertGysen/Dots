@@ -6,6 +6,7 @@ import {
   chainScore,
   clear,
   deal,
+  findComputerMove,
   hasValidMove,
   isAdjacent,
   isCrossingLink,
@@ -237,6 +238,120 @@ describe('board model', () => {
 
       expect(board.flat().every((dot) => dot!.color === COLOR_PALETTE[0])).toBe(true);
       for (let i = 0; i < 200; i++) expect(hasValidMove(deal(Math.random))).toBe(true);
+    });
+  });
+
+  describe('DOTS-103', () => {
+    /**
+     * A background of orange, green, pink and yellow in 2×2 tiles, so no two adjacent dots share a
+     * color; only the listed cells are blue and form the board's chains.
+     */
+    function boardWithBlueAt(blueCells: [number, number][]): Board {
+      const indexes: number[] = [];
+      for (let row = 0; row < BOARD_SIZE; row++) {
+        for (let column = 0; column < BOARD_SIZE; column++) {
+          const blue = blueCells.some(([r, c]) => r === row && c === column);
+          indexes.push(blue ? 0 : 1 + (row % 2) * 2 + (column % 2));
+        }
+      }
+      return boardFromIndexes(indexes);
+    }
+
+    const at = (cells: [number, number][]) => cells.map(([row, column]) => ({ row, column }));
+
+    /** A seeded random source, so the boards below are the same on every run. */
+    function seeded(seed: number): () => number {
+      let state = seed;
+      return () => {
+        state = (state * 1664525 + 1013904223) % 2 ** 32;
+        return state / 2 ** 32;
+      };
+    }
+
+    /** The longest valid chain length, by plain search without the pruning findComputerMove uses. */
+    function longestChainLength(board: Board): number {
+      let longest = 0;
+      const search = (chain: { row: number; column: number }[]) => {
+        if (chain.length >= 3) longest = Math.max(longest, chain.length);
+        const last = chain[chain.length - 1];
+        for (let row = last.row - 1; row <= last.row + 1; row++) {
+          for (let column = last.column - 1; column <= last.column + 1; column++) {
+            const next = { row, column };
+            if (row < 0 || row >= BOARD_SIZE || column < 0 || column >= BOARD_SIZE) continue;
+            if (!isAdjacent(last, next) || chain.some((d) => d.row === row && d.column === column)) continue;
+            if (board[row][column]!.color !== board[chain[0].row][chain[0].column]!.color) continue;
+            if (isCrossingLink(chain, next)) continue;
+            search([...chain, next]);
+          }
+        }
+      };
+      for (let row = 0; row < BOARD_SIZE; row++) {
+        for (let column = 0; column < BOARD_SIZE; column++) search([{ row, column }]);
+      }
+      return longest;
+    }
+
+    it('AC_8_on_the_known_test_board_the_computer_plays_the_5_dot_chain_for_70_points', () => {
+      // A 3-dot chain comes first in reading order; the longer 5-dot chain must win.
+      const board = boardWithBlueAt([
+        [0, 0], [0, 1], [0, 2],
+        [3, 1], [4, 2], [4, 3], [5, 4], [6, 4],
+      ]);
+
+      const computerMove = findComputerMove(board);
+
+      expect(computerMove).toEqual(at([[3, 1], [4, 2], [4, 3], [5, 4], [6, 4]]));
+      expect(chainScore(computerMove.length)).toBe(70);
+    });
+
+    it('AC_8_the_computer_move_is_a_valid_chain_with_the_most_dots_on_random_boards', () => {
+      const random = seeded(103);
+      for (let i = 0; i < 40; i++) {
+        const board = deal(random);
+
+        const computerMove = findComputerMove(board);
+
+        expect(computerMove.length).toBe(longestChainLength(board));
+        expect(computerMove.length).toBeGreaterThanOrEqual(3);
+        const color = board[computerMove[0].row][computerMove[0].column]!.color;
+        computerMove.forEach((dot, n) => {
+          expect(board[dot.row][dot.column]!.color).toBe(color);
+          if (n === 0) return;
+          expect(isAdjacent(computerMove[n - 1], dot)).toBe(true);
+          expect(computerMove.slice(0, n).some((d) => d.row === dot.row && d.column === dot.column)).toBe(false);
+          expect(isCrossingLink(computerMove.slice(0, n), dot)).toBe(false);
+        });
+      }
+    });
+
+    it('AC_8_a_board_without_a_valid_move_has_no_computer_move', () => {
+      expect(findComputerMove(boardWithBlueAt([[2, 2], [2, 3]]))).toEqual([]);
+    });
+
+    it('AC_9_on_a_tie_the_chain_whose_starting_dot_comes_first_in_reading_order_is_played', () => {
+      const board = boardWithBlueAt([
+        [5, 0], [5, 1], [5, 2],
+        [1, 4], [1, 5], [1, 6],
+      ]);
+
+      expect(findComputerMove(board)).toEqual(at([[1, 4], [1, 5], [1, 6]]));
+    });
+
+    it('AC_9_from_one_starting_dot_the_neighbors_are_tried_in_the_fixed_order', () => {
+      // From (2,2), "right" comes before "down", so the chain goes right first.
+      expect(findComputerMove(boardWithBlueAt([[2, 2], [2, 3], [3, 2]]))).toEqual(
+        at([[2, 2], [2, 3], [3, 2]]),
+      );
+      // In a 2×2 square the depth-first search goes right, then down-left, then right: a Z, not a U.
+      expect(findComputerMove(boardWithBlueAt([[2, 2], [2, 3], [3, 2], [3, 3]]))).toEqual(
+        at([[2, 2], [2, 3], [3, 2], [3, 3]]),
+      );
+    });
+
+    it('AC_9_the_same_board_always_gives_the_same_computer_move', () => {
+      const board = deal(seeded(9));
+
+      expect(findComputerMove(board)).toEqual(findComputerMove(board));
     });
   });
 });
